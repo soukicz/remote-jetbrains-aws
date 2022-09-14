@@ -77,7 +77,7 @@ const auth = (request, callback) => {
         issuer: 'https://portal.sso.eu-west-1.amazonaws.com/saml/assertion/MDU3NzQ4MDUyODY2X2lucy0xODg4NDAxMzU0YWFiNWUz',
         audience: 'jetbrains',
         signatureAlgorithm: 'sha256',
-        wantAssertionsSigned:true,
+        wantAssertionsSigned: true,
         privateKey: Params['private-key'],
         cert: Params['issuer-certificate'],
     }, (req, profile, done) => {
@@ -125,7 +125,7 @@ const auth = (request, callback) => {
     s.authenticate({body}, {additionalParams: {RelayState: request.uri === '/auth' ? '/' : request.uri}});
 };
 
-const paramsGet = (context) => (new Promise(function (fulfill, reject) {
+const paramsGet = () => (new Promise(function (fulfill, reject) {
     // immediate return cached params if defined
     if (Params['auth-domain-name'] !== undefined) return fulfill();
 
@@ -147,35 +147,43 @@ const paramsGet = (context) => (new Promise(function (fulfill, reject) {
         .catch(err => (reject(err)));
 }));
 
-exports.handler = (event, context, callback) => {
-    paramsGet(context)
-        .then(() => {
-            const request = event.Records[0].cf.request;
-            const host = request.headers.host[0].value;
+/**
+ *
+ * @param request
+ * @param request.rawPath
+ * @param request.headers
+ * @param request.cookies
+ * @param context
+ * @param callback
+ */
+exports.handler = async (request, context, callback) => {
+    await paramsGet()
 
-            // explicitly call middleware
-            if (request.uri === "/auth")
-                return auth(request, callback);
+    const host = request.headers.host;
 
-            // explicitly expire token
-            if (request.uri === "/auth/expire")
-                return callback(null, responseCookie("", new Date(0), `https://${host}/auth`));
+    // explicitly call middleware
+    if (request.rawPath === '/auth')
+        return auth(request, callback);
 
-            // if token is valid make original request
-            // if invalid call middleware
-            try {
-                const payload = jwt.decode(requestCookie(request, "access_token"), Buffer.from(Params['auth-hash-key'], "base64"));
-                if (request.uri.endsWith('/')) {
-                    request.uri += 'index.html';
-                }
-                // Check whether the URI is missing a file extension.
-                else if (!request.uri.includes('.')) {
-                    request.uri += '/index.html';
-                }
-                callback(null, request);
-            } catch (err) {
-                auth(request, callback);
-            }
-        })
-        .catch(err => (callback(err)));
+    // explicitly expire token
+    if (request.rawPath === '/auth/expire')
+        return callback(null, responseCookie("", new Date(0), `https://${host}/auth`));
+
+    // if token is valid make original request
+    // if invalid call middleware
+    try {
+        const payload = jwt.decode(requestCookie(request, "access_token"), Buffer.from(Params['auth-hash-key'], "base64"));
+
+        return {
+            "statusCode": 200,
+            "headers": {
+                "Content-Type": "text/html",
+            },
+            "body": "<h1>ok</h1>",
+            "isBase64Encoded": false
+        }
+    } catch (err) {
+        auth(request, callback);
+    }
+
 };
