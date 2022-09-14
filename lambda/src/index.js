@@ -38,8 +38,7 @@ const responseCookie = (token, exp, host, url) => {
 
 const responseError = (err) => {
     const response = {
-        status: "401",
-        statusDescription: "Unauthorized",
+        statusCode: "401",
         headers: {
             "content-type": "text/plain",
         },
@@ -50,8 +49,7 @@ const responseError = (err) => {
 };
 
 const responseRedirect = (location) => ({
-    status: "302",
-    statusDescription: "Found",
+    statusCode: "302",
     headers: {
         location: location
     },
@@ -177,12 +175,12 @@ exports.handler = async (request, context, callback) => {
         const payload = jwt.decode(requestCookie(request, "access_token"), Buffer.from(Params['auth-hash-key'], "base64"));
 
         return {
-            "statusCode": 200,
-            "headers": {
+            statusCode: 200,
+            headers: {
                 "Content-Type": "text/html",
             },
-            "body": "<h1>ok</h1>",
-            "isBase64Encoded": false
+            body: "<h1>ok</h1>",
+            isBase64Encoded: false
         }
     } catch (err) {
         return await auth(request);
