@@ -1,6 +1,7 @@
 "use strict";
 const AWS = require('aws-sdk')
 const auth = require('./auth')
+const home = require('./home')
 
 // global const reused across invocations
 const Params = {
@@ -56,20 +57,33 @@ exports.handler = async (request, context, callback) => {
 
     // if token is valid make original request
     // if invalid call middleware
+    let payload
     try {
-        const payload = auth.getPayload(request, Params)
-        console.log(JSON.stringify(payload))
-
-        return {
-            statusCode: 200,
-            headers: {
-                "Content-Type": "text/html",
-            },
-            body: "<h1>ok</h1>",
-            isBase64Encoded: false
-        }
+        payload = auth.getPayload(request, Params)
     } catch (err) {
         return await auth.handleRequest(request);
     }
+    console.log(JSON.stringify(payload))
+
+    if (request.rawPath === '/') {
+        return {
+            statusCode: 200,
+            headers: {
+                "Content-Type": "text/html; charset=UTF-8",
+            },
+            body: await home.render(payload),
+            isBase64Encoded: false
+        }
+    }
+
+    return {
+        statusCode: 404,
+        headers: {
+            "Content-Type": "text/plaint; charset=UTF-8",
+        },
+        body: "HTTP 404 - Not Found",
+        isBase64Encoded: false
+    }
+
 
 };
