@@ -88,7 +88,7 @@ exports.startInstance = async function (user, ip) {
 
     await EC2.requestSpotFleet({
         SpotFleetRequestConfig: {
-            IamFleetRole: "arn:aws:iam::123456789012:role/my-spot-fleet-role",
+            IamFleetRole: "arn:aws:iam::146678277531:role/aws-ec2-spot-fleet-tagging-role",
             LaunchSpecifications: [
                 {
                     ImageId: ami,
