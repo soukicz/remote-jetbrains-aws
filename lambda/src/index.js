@@ -115,7 +115,7 @@ const auth = (request) => {
             fulfill(responseCookie(token, exp, host, response.url));
         };
 
-        s.authenticate({body}, {additionalParams: {RelayState: request.uri === '/auth' ? '/' : request.uri}});
+        s.authenticate({body}, {additionalParams: {RelayState: request.rawPath === '/auth' ? '/' : request.rawPath}});
     });
 };
 
