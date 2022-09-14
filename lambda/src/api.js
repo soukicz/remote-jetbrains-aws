@@ -108,10 +108,11 @@ exports.startInstance = async function (user, ip) {
                     },
                     IamInstanceProfile: {
                         Name: 'ec2_instance_role_jetbrains'
-                    }
+                    },
                 }
             ],
-            TargetCapacity: 1
+            TargetCapacity: 1,
+            Type: 'request'
         }
     }).promise();
 }
