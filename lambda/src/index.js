@@ -64,8 +64,8 @@ const responseRedirect = (location) => ({
 });
 
 const auth = (request, callback) => {
-    const host = request.headers.host[0].value;
-    const body = querystring.parse(Buffer.from(request.body.data, 'base64').toString('utf8'));
+    const host = request.headers.host;
+    const body = querystring.parse(request.body)
 
     const s = new AwsStrategy({
         passReqToCallback: true,
@@ -157,6 +157,12 @@ const paramsGet = () => (new Promise(function (fulfill, reject) {
  * @param callback
  */
 exports.handler = async (request, context, callback) => {
+    console.log(JSON.stringify(request))
+
+    if (request.body && request.isBase64Encoded) {
+        request.body = Buffer.from(request.body.data, 'base64').toString('utf8')
+    }
+
     await paramsGet()
 
     const host = request.headers.host;
