@@ -15,6 +15,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: npm install and build
         run: |
+          cd lambda
           npm ci
           npm run build --if-present
         env:
@@ -22,6 +23,7 @@ jobs:
       - name: zip
         uses: montudor/action-zip@v0.1.0
         with:
+          working-directory: lambda
           args: zip -qq -r ./bundle.zip ./
       - name: default deploy
         uses: appleboy/lambda-action@master
@@ -30,5 +32,4 @@ jobs:
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: eu-central-1
           function_name: jetbrains
-          zip_file: bundle.zip
-          source: lambda
+          zip_file: lambda/bundle.zip
