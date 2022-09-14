@@ -1,0 +1,15 @@
+{
+  "name": "remote-jetbrains-aws",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Petr Soukup <soukup@simplia.cz>",
+  "license": "ISC",
+  "dependencies": {
+    "jwt-simple": "^0.5.6",
+    "passport-saml": "^3.2.1"
+  }
+}
