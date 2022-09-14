@@ -135,7 +135,6 @@ const paramsGet = () => (new Promise(function (fulfill, reject) {
             data.Parameters.forEach((p) => {
                 Params[p.Name.slice(path.length)] = p.Value;
             })
-            console.log(JSON.stringify(Params))
             fulfill()
         })
         .catch(err => (reject(err)));
@@ -147,6 +146,7 @@ const paramsGet = () => (new Promise(function (fulfill, reject) {
  * @param request.rawPath
  * @param request.headers
  * @param request.cookies
+ * @param request.isBase64Encoded
  * @param context
  * @param callback
  */
@@ -154,7 +154,7 @@ exports.handler = async (request, context, callback) => {
     console.log(JSON.stringify(request))
 
     if (request.body && request.isBase64Encoded) {
-        request.body = Buffer.from(request.body.data, 'base64').toString('utf8')
+        request.body = Buffer.from(request.body, 'base64').toString('utf8')
     }
 
     await paramsGet()
