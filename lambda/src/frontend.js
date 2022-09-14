@@ -1,4 +1,4 @@
-document.querySelector('.start-instance').addEventListener(function (e) {
+document.querySelector('.start-instance').addEventListener('click', function (e) {
     e.preventDefault()
 
     fetch('/api/start-instance')
