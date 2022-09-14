@@ -102,7 +102,7 @@ exports.startInstance = async function (user, ip) {
                     ImageId: ami,
                     InstanceType: "m5.large",
                     SecurityGroups: [{GroupId: securityGroup}],
-                    UserData: userData,
+                    UserData: Buffer.from(userData, 'utf8').toString('base64'),
                     Placement: {
                         AvailabilityZone: volume.AvailabilityZone
                     },
