@@ -58,7 +58,7 @@ const responseRedirect = (location) => ({
 });
 
 const auth = (request) => {
-    new Promise(function (fulfill, reject) {
+    return new Promise(function (fulfill, reject) {
         const host = request.headers.host;
         const body = querystring.parse(request.body)
 
@@ -165,11 +165,11 @@ exports.handler = async (request, context, callback) => {
 
     // explicitly call middleware
     if (request.rawPath === '/auth')
-        return auth(request, callback);
+        return await auth(request);
 
     // explicitly expire token
     if (request.rawPath === '/auth/expire')
-        return callback(null, responseCookie("", new Date(0), `https://${host}/auth`));
+        return responseCookie("", new Date(0), `https://${host}/auth`);
 
     // if token is valid make original request
     // if invalid call middleware
@@ -185,7 +185,7 @@ exports.handler = async (request, context, callback) => {
             "isBase64Encoded": false
         }
     } catch (err) {
-        return auth(request);
+        return await auth(request);
     }
 
 };
