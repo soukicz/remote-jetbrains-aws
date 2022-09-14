@@ -34,7 +34,7 @@ exports.startInstance = async function (user, ip) {
         volume = (await EC2.createVolume({
             VolumeType: 'gp3',
             Size: 30,
-            AvailabilityZone: `${region}-a`,
+            AvailabilityZone: `${region}a`,
         }).promise())
 
         await EC2.createTags({
