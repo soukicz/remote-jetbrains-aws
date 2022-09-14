@@ -2,6 +2,7 @@
 const AWS = require('aws-sdk')
 const auth = require('./auth')
 const home = require('./home')
+const api = require('./api')
 
 // global const reused across invocations
 const Params = {
@@ -43,6 +44,8 @@ exports.handler = async (request, context, callback) => {
         request.body = Buffer.from(request.body, 'base64').toString('utf8')
     }
 
+    const ip = request.requestContext.http.sourceIp
+
     await paramsGet()
 
     const host = request.headers.host;
@@ -71,7 +74,17 @@ exports.handler = async (request, context, callback) => {
             headers: {
                 "Content-Type": "text/html; charset=UTF-8",
             },
-            body: await home.render(payload),
+            body: await home.render(payload.sub),
+            isBase64Encoded: false
+        }
+    }
+    if (request.rawPath === '/api/start-instance') {
+        return {
+            statusCode: 200,
+            headers: {
+                "Content-Type": "application/json; charset=UTF-8",
+            },
+            body: await api.startInstance(payload.sub, ip),
             isBase64Encoded: false
         }
     }
