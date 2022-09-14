@@ -11,5 +11,8 @@
   "dependencies": {
     "jwt-simple": "^0.5.6",
     "passport-saml": "^3.2.1"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.1216.0"
   }
 }
