@@ -41,10 +41,7 @@ const responseError = (err) => {
         status: "401",
         statusDescription: "Unauthorized",
         headers: {
-            "content-type": [{
-                key: "Content-Type",
-                value: "text/html",
-            }],
+            "content-type": "text/plain",
         },
         body: JSON.stringify(err),
     }
@@ -56,73 +53,72 @@ const responseRedirect = (location) => ({
     status: "302",
     statusDescription: "Found",
     headers: {
-        location: [{
-            key: "Location",
-            value: location,
-        }],
+        location: location
     },
 });
 
-const auth = (request, callback) => {
-    const host = request.headers.host;
-    const body = querystring.parse(request.body)
+const auth = (request) => {
+    new Promise(function (fulfill, reject) {
+        const host = request.headers.host;
+        const body = querystring.parse(request.body)
 
-    const s = new AwsStrategy({
-        passReqToCallback: true,
-        callbackURL: `https://${host}/auth`,
-        host: host,
-        path: '/auth',
-        protocol: 'https',
-        entryPoint: 'https://portal.sso.eu-west-1.amazonaws.com/saml/assertion/MDU3NzQ4MDUyODY2X2lucy0xODg4NDAxMzU0YWFiNWUz',
-        issuer: 'https://portal.sso.eu-west-1.amazonaws.com/saml/assertion/MDU3NzQ4MDUyODY2X2lucy0xODg4NDAxMzU0YWFiNWUz',
-        audience: 'jetbrains',
-        signatureAlgorithm: 'sha256',
-        wantAssertionsSigned: true,
-        privateKey: Params['private-key'],
-        cert: Params['issuer-certificate'],
-    }, (req, profile, done) => {
+        const s = new AwsStrategy({
+            passReqToCallback: true,
+            callbackURL: `https://${host}/auth`,
+            host: host,
+            path: '/auth',
+            protocol: 'https',
+            entryPoint: 'https://portal.sso.eu-west-1.amazonaws.com/saml/assertion/MDU3NzQ4MDUyODY2X2lucy0xODg4NDAxMzU0YWFiNWUz',
+            issuer: 'https://portal.sso.eu-west-1.amazonaws.com/saml/assertion/MDU3NzQ4MDUyODY2X2lucy0xODg4NDAxMzU0YWFiNWUz',
+            audience: 'jetbrains',
+            signatureAlgorithm: 'sha256',
+            wantAssertionsSigned: true,
+            privateKey: Params['private-key'],
+            cert: Params['issuer-certificate'],
+        }, (req, profile, done) => {
 
-        if (profile.nameID.endsWith(Params['auth-domain-name'])) {
-            return done(null, {
-                profile,
-                url: req.body.RelayState
-            }); // call success with profile
-        }
+            if (profile.nameID.endsWith(Params['auth-domain-name'])) {
+                return done(null, {
+                    profile,
+                    url: req.body.RelayState
+                }); // call success with profile
+            }
 
-        // call fail with warning
-        done(null, false, {
-            name: "UserError",
-            message: "Email is not a member of the domain",
-            status: "401",
+            // call fail with warning
+            done(null, false, {
+                name: "UserError",
+                message: "Email is not a member of the domain",
+                status: "401",
+            });
         });
+
+        s.error = (err) => {
+            console.log(JSON.stringify(err));
+            fulfill(responseError(err));
+        };
+
+        s.fail = (warning) => {
+            console.log(JSON.stringify(warning));
+            fulfill(responseError(warning));
+        };
+
+        s.redirect = (url) => {
+            fulfill(responseRedirect(url));
+        };
+
+        s.success = (response) => {
+            const exp = new Date(response.profile.getAssertion().Assertion.AuthnStatement[0].$.SessionNotOnOrAfter);
+            const key = Buffer.from(Params['auth-hash-key'], "base64");
+            const token = jwt.encode({
+                exp: Math.floor(exp / 1000),
+                sub: response.profile.nameID,
+            }, key);
+
+            fulfill(responseCookie(token, exp, host, response.url));
+        };
+
+        s.authenticate({body}, {additionalParams: {RelayState: request.uri === '/auth' ? '/' : request.uri}});
     });
-
-    s.error = (err) => {
-        console.log(JSON.stringify(err));
-        callback(null, responseError(err));
-    };
-
-    s.fail = (warning) => {
-        console.log(JSON.stringify(warning));
-        callback(null, responseError(warning));
-    };
-
-    s.redirect = (url) => {
-        callback(null, responseRedirect(url));
-    };
-
-    s.success = (response) => {
-        const exp = new Date(response.profile.getAssertion().Assertion.AuthnStatement[0].$.SessionNotOnOrAfter);
-        const key = Buffer.from(Params['auth-hash-key'], "base64");
-        const token = jwt.encode({
-            exp: Math.floor(exp / 1000),
-            sub: response.profile.nameID,
-        }, key);
-
-        callback(null, responseCookie(token, exp, host, response.url));
-    };
-
-    s.authenticate({body}, {additionalParams: {RelayState: request.uri === '/auth' ? '/' : request.uri}});
 };
 
 const paramsGet = () => (new Promise(function (fulfill, reject) {
@@ -189,7 +185,7 @@ exports.handler = async (request, context, callback) => {
             "isBase64Encoded": false
         }
     } catch (err) {
-        auth(request, callback);
+        return auth(request);
     }
 
 };
