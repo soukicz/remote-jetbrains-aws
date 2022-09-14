@@ -52,7 +52,7 @@ exports.handler = async (request, context, callback) => {
 
     // explicitly call middleware
     if (request.rawPath === '/auth')
-        return await auth.handleRequest(request);
+        return await auth.handleRequest(request, Params);
 
     // explicitly expire token
     if (request.rawPath === '/auth/expire')
@@ -64,7 +64,7 @@ exports.handler = async (request, context, callback) => {
     try {
         payload = auth.getPayload(request, Params)
     } catch (err) {
-        return await auth.handleRequest(request);
+        return await auth.handleRequest(request, Params);
     }
     console.log(JSON.stringify(payload))
 
