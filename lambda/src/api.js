@@ -55,7 +55,7 @@ exports.startInstance = async function (user, ip) {
     if (securityGroups.length === 0) {
         const vpc = (await EC2.describeVpcs({
             Filters: [
-                {Name: 'is-default', Values: [true]}
+                {Name: 'is-default', Values: ['true']}
             ]
         }).promise()).Vpcs[0].VpcId
 
