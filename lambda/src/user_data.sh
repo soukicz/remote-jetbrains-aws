@@ -17,7 +17,9 @@ INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
 
 ## EBS
 aws ec2 attach-volume --volume-id "%ebs_id%" --device /dev/xvde  --instance-id "$INSTANCE_ID" --region "%region%"
-while [ ! -e /dev/xvde ] ; do sleep 1 ; done
+#while [ ! -e /dev/xvde ] ; do sleep 1 ; done
+
+sleep 5
 
 if [ "$(file -b -s /dev/xvde)" == "data" ]; then
      mkfs -t ext4 /dev/xvde
