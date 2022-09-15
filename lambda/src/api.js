@@ -121,8 +121,10 @@ exports.startInstance = async function (user, ip) {
         InstanceType: 'c5a.xlarge',
         EbsOptimized: true,
         IamInstanceProfile: {Name: 'ec2_instance_role_jetbrains'},
-        SecurityGroups: [{GroupId: securityGroup}],
+        SecurityGroups: [securityGroup],
         SubnetId: 'subnet-0a9dc07f7a36035ff',
-        ImageId: ami
+        ImageId: ami,
+        MinCount: 1,
+        MaxCount: 1
     }).promise()
 }
