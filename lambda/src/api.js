@@ -117,7 +117,7 @@ exports.startInstance = async function (user, ip) {
     }).promise();*/
 
     await EC2.runInstances({
-        UserData: userData,
+        UserData: Buffer.from(userData, 'utf8').toString('base64'),
         InstanceType: 'c5a.xlarge',
         EbsOptimized: true,
         IamInstanceProfile: {Name: 'ec2_instance_role_jetbrains'},
