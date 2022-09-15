@@ -23,10 +23,9 @@ if [ "$(file -b -s /dev/xvde)" == "data" ]; then
      mkfs -t ext4 /dev/xvde
 fi
 
-rm -rf /home/ec2-user
-
-mkdir /home/ec2-user
-mount /dev/xvde /home/ec2-user
+#rm -rf /home/ec2-user
+#mkdir /home/ec2-user
+#mount /dev/xvde /home/ec2-user
 
 sleep 5
 
