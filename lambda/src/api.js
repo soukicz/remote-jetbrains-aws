@@ -94,7 +94,7 @@ exports.startInstance = async function (user, ip) {
         .replace(/%ebs_id%/g, volume.VolumeId)
         .replace(/%region%/g, region)
 
-    await EC2.requestSpotFleet({
+    /*await EC2.requestSpotFleet({
         SpotFleetRequestConfig: {
             IamFleetRole: "arn:aws:iam::146678277531:role/aws-ec2-spot-fleet-tagging-role",
             LaunchSpecifications: [
@@ -114,5 +114,15 @@ exports.startInstance = async function (user, ip) {
             TargetCapacity: 1,
             Type: 'request'
         }
-    }).promise();
+    }).promise();*/
+
+    await EC2.runInstances({
+        UserData: userData,
+        InstanceType: 'c5a.xlarge',
+        EbsOptimized: true,
+        IamInstanceProfile: {Name: 'ec2_instance_role_jetbrains'},
+        SecurityGroups: [{GroupId: securityGroup}],
+        SubnetId: 'subnet-0a9dc07f7a36035ff',
+        ImageId: ami
+    }).promise()
 }
