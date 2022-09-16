@@ -10,7 +10,8 @@ exports.render = async (user) => {
 </div>`
 
     const instance = await api.findInstance('eu-central-1', user)
-    if (!instance || [].indexOf(instance.State.Name) > -1) {
+    console.log(JSON.stringify(instance))
+    if (!instance || instance.State.Name === 'running') {
         if (instance) {
             html += `
         <div> Status: ${instance.State.Name}</div>
@@ -19,11 +20,17 @@ exports.render = async (user) => {
         }
         html += `
 <h4>IP: ${instance.PublicIpAddress}</h4>
-<a href="#" class="btn btn-success btn-lg px-4 hibernate-instance"><i class="fa fa-stop"></i> Stop instance</a>
+<a href="#" class="btn btn-warning btn-lg px-4 hibernate-instance"><i class="fa fa-stop"></i> Stop instance</a>
 &nbsp;
-<a href="#" class="btn btn-success btn-lg px-4 terminate-instance"><i class="fa fa-stop"></i> Terminate instance</a>
+<a href="#" class="btn btn-danger btn-lg px-4 terminate-instance"><i class="fa fa-stop"></i> Terminate instance</a>
     `
+
     } else {
+        if (instance.State.Name === 'stopped') {
+            html += `
+<a href="#" class="btn btn-danger btn-lg px-4 terminate-instance"><i class="fa fa-stop"></i> Terminate instance</a>
+    `
+        }
         html += `<a href="#" class="btn btn-primary btn-lg px-4 start-instance">Start instance</a>
     `
     }
