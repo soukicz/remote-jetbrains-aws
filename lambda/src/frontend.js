@@ -1,6 +1,6 @@
 function callApi(url) {
     document.querySelector('.loading').style.display = 'block'
-    document.querySelectorAll('.btn').forEach(btn => {
+    document.querySelectorAll('.btn, .btn-group').forEach(btn => {
         btn.style.display = 'none'
     })
 
@@ -11,7 +11,7 @@ function callApi(url) {
         })
         .catch(err => {
             document.querySelector('.loading').style.display = 'none'
-            document.querySelectorAll('.btn').forEach(btn => {
+            document.querySelectorAll('.btn, .btn-group').forEach(btn => {
                 btn.style.display = 'none'
             })
 
@@ -24,7 +24,7 @@ if (document.querySelector('.start-instance')) {
     document.querySelector('.start-instance').addEventListener('click', function (e) {
         e.preventDefault()
 
-        callApi('/api/start-instance', this)
+        callApi('/api/start-instance?type=' + encodeURIComponent(this.dataset.type), this)
     })
 }
 
