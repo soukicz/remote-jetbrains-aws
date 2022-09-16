@@ -93,6 +93,7 @@ exports.startInstance = async function (user, ip) {
     const userData = fs.readFileSync(`${__dirname}/user_data.sh`, 'utf8')
         .replace(/%ebs_id%/g, volume.VolumeId)
         .replace(/%region%/g, region)
+        .replace(/%key%/g, sshKey)
 
     /*await EC2.requestSpotFleet({
         SpotFleetRequestConfig: {
