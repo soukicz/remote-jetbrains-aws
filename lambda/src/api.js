@@ -26,8 +26,8 @@ async function findInstance(region, user) {
 
 exports.findInstance = findInstance
 
-exports.terminateInstance = async function (region) {
-    const instance = await findInstance(region)
+exports.terminateInstance = async function (region, user) {
+    const instance = await findInstance(region, user)
     if (!instance) {
         return {status: true}
     }
@@ -39,8 +39,8 @@ exports.terminateInstance = async function (region) {
     return {status: true}
 }
 
-exports.hibernateInstance = async function (region) {
-    const instance = await findInstance(region)
+exports.hibernateInstance = async function (region, user) {
+    const instance = await findInstance(region, user)
     console.log(JSON.stringify(instance))
     if (!instance) {
         return {status: true}
