@@ -35,15 +35,15 @@ exports.render = async (user) => {
             html += `<a href="#" class="btn btn-success btn-lg px-4 start-instance">Start instance</a>`
         } else {
             html += `<div class="btn-group">
-              <button type="button" class="btn btn-success start-instance" data-type="c5a.large" >Start instance</button>
+              <button type="button" class="btn btn-success start-instance" data-type="c5.large" >Start instance</button>
               <button type="button" class="btn btn-success dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="visually-hidden">Toggle Dropdown</span>
               </button>
               <ul class="dropdown-menu">
-                <li><a class="dropdown-item start-instance" data-type="c5a.large" href="#">c5a.large</a></li>
-                <li><a class="dropdown-item start-instance" data-type="c5a.xlarge" href="#">c5a.xlarge</a></li>
-                <li><a class="dropdown-item start-instance" data-type="c5a.2xlarge" href="#">c5a.2xlarge</a></li>
-                <li><a class="dropdown-item start-instance" data-type="c5a.4xlarge" href="#">c5a.4xlarge</a></li>
+                <li><a class="dropdown-item start-instance" data-type="c5.large" href="#">c5.large</a></li>
+                <li><a class="dropdown-item start-instance" data-type="c5.xlarge" href="#">c5.xlarge</a></li>
+                <li><a class="dropdown-item start-instance" data-type="c5.2xlarge" href="#">c5.2xlarge</a></li>
+                <li><a class="dropdown-item start-instance" data-type="c5.4xlarge" href="#">c5.4xlarge</a></li>
               </ul>
             </div>`
         }

@@ -176,7 +176,7 @@ exports.startInstance = async function (user, ip) {
     if (!(await findInstance(region, user))) {
         const instance = await EC2.runInstances({
             UserData: Buffer.from(userData, 'utf8').toString('base64'),
-            InstanceType: 'c5a.xlarge',
+            InstanceType: 'c5.xlarge',
             EbsOptimized: true,
             IamInstanceProfile: {Name: 'ec2_instance_role_jetbrains'},
             SecurityGroupIds: [securityGroup],
