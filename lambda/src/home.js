@@ -11,11 +11,13 @@ exports.render = async (user) => {
 
     const instance = await api.findInstance('eu-central-1', user)
     console.log(JSON.stringify(instance))
-    if (instance && ['pending', 'running'].indexOf(instance.State.Name) > -1) {
+    if (instance) {
         html += `
         <div> Status: ${instance.State.Name}</div>
-            <br>
-            <h4>IP: ${instance.PublicIpAddress}</h4>
+            <br>`
+    }
+    if (instance && ['pending', 'running'].indexOf(instance.State.Name) > -1) {
+        html += `<h4>IP: ${instance.PublicIpAddress}</h4>
             <br>`
         html += `
 
