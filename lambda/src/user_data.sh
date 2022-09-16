@@ -12,7 +12,9 @@ aws ec2 attach-volume --volume-id "%ebs_id%" --device /dev/xvde  --instance-id "
 
 sleep 5
 
-if [ "$(file -b -s /dev/xvde)" == "data" ]; then
+DEVICE=${realpath /dev/xvde}
+
+if [ "$(file -b -s $DEVICE)" == "data" ]; then
      mkfs -t ext4 /dev/xvde
 fi
 
