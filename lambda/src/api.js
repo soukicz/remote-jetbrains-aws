@@ -132,16 +132,18 @@ exports.startInstance = async function (user, ip) {
         securityGroup = securityGroups[0].GroupId
     }
 
-    try {
-        await EC2.authorizeSecurityGroupIngress({
-            GroupId: securityGroup,
-            FromPort: 22,
-            ToPort: 22,
-            CidrIp: `${ip}/24`,
-            IpProtocol: 'tcp'
-        }).promise()
-    } catch (e) {
-        console.log(e)
+    for (const port of [22, 80, 443]) {
+        try {
+            await EC2.authorizeSecurityGroupIngress({
+                GroupId: securityGroup,
+                FromPort: port,
+                ToPort: port,
+                CidrIp: `${ip}/24`,
+                IpProtocol: 'tcp'
+            }).promise()
+        } catch (e) {
+            console.log(e)
+        }
     }
 
     const userData = fs.readFileSync(`${__dirname}/user_data.sh`, 'utf8')
