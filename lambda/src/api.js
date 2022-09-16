@@ -12,9 +12,9 @@ async function findInstance(region, user) {
         ]
 
     }).promise()
-    
+
     console.log(JSON.stringify(list))
-    if (list.Reservations.length === 0) {
+    if (list.Reservations[0].Instances.length === 0) {
         return null
     }
 
