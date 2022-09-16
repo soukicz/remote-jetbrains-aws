@@ -90,7 +90,7 @@ exports.handler = async (request, context, callback) => {
         }
     }
     if (request.rawPath === '/api/start-instance') {
-        return createJsonResponse(await api.startInstance(payload.sub, ip))
+        return createJsonResponse(await api.startInstance(payload.sub, ip, request.queryStringParameters.type))
     }
 
     if (request.rawPath === '/api/hibernate-instance') {

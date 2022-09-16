@@ -55,7 +55,7 @@ exports.hibernateInstance = async function (region, user) {
     return {status: true}
 }
 
-exports.startInstance = async function (user, ip) {
+exports.startInstance = async function (user, ip, instanceType) {
     const region = 'eu-central-1'
     const EC2 = new AWS.EC2({apiVersion: '2016-11-15', region: region});
     const SSM = new AWS.SSM({region: region})
@@ -176,7 +176,7 @@ exports.startInstance = async function (user, ip) {
     if (!(await findInstance(region, user))) {
         const instance = await EC2.runInstances({
             UserData: Buffer.from(userData, 'utf8').toString('base64'),
-            InstanceType: 'c5.xlarge',
+            InstanceType: instanceType,
             EbsOptimized: true,
             IamInstanceProfile: {Name: 'ec2_instance_role_jetbrains'},
             SecurityGroupIds: [securityGroup],
