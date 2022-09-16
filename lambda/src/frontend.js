@@ -20,26 +20,26 @@ function callApi(url) {
         })
 }
 
-if (document.querySelector('.start-instance')) {
-    document.querySelector('.start-instance').addEventListener('click', function (e) {
+document.querySelectorAll('.start-instance').forEach(function (button) {
+    button.addEventListener('click', function (e) {
         e.preventDefault()
 
         callApi('/api/start-instance?type=' + encodeURIComponent(this.dataset.type), this)
     })
-}
+});
 
-if (document.querySelector('.terminate-instance')) {
-    document.querySelector('.terminate-instance').addEventListener('click', function (e) {
+document.querySelectorAll('.terminate-instance').forEach(function (button) {
+    button.addEventListener('click', function (e) {
         e.preventDefault()
 
         callApi('/api/terminate-instance', this)
     })
-}
+})
 
-if (document.querySelector('.hibernate-instance')) {
-    document.querySelector('.hibernate-instance').addEventListener('click', function (e) {
+document.querySelectorAll('.hibernate-instance').forEach(function (button) {
+    button.addEventListener('click', function (e) {
         e.preventDefault()
 
         callApi('/api/hibernate-instance', this)
     })
-}
+});

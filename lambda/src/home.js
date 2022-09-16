@@ -35,8 +35,8 @@ exports.render = async (user) => {
             html += `<a href="#" class="btn btn-success btn-lg px-4 start-instance">Start instance</a>`
         } else {
             html += `<div class="btn-group">
-              <button type="button" class="btn btn-danger start-instance">Start instance</button>
-              <button type="button" class="btn btn-danger dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+              <button type="button" class="btn btn-success start-instance" data-type="c5a.large" >Start instance</button>
+              <button type="button" class="btn btn-success dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="visually-hidden">Toggle Dropdown</span>
               </button>
               <ul class="dropdown-menu">
