@@ -31,12 +31,13 @@ exports.terminateInstance = async function (region) {
     await EC2.terminateInstances({
         InstanceIds: [instance.InstanceId]
     }).promise()
-    
+
     return {status: true}
 }
 
 exports.hibernateInstance = async function (region) {
     const instance = await findInstance(region)
+    console.log(JSON.stringify(instance))
     if (!instance) {
         return
     }
