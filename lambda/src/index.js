@@ -27,6 +27,17 @@ const paramsGet = async () => {
     })
 };
 
+function createJsonResponse(body) {
+    return {
+        statusCode: 200,
+        headers: {
+            "Content-Type": "application/json; charset=UTF-8",
+        },
+        body: body,
+        isBase64Encoded: false
+    }
+}
+
 /**
  *
  * @param request
@@ -79,14 +90,15 @@ exports.handler = async (request, context, callback) => {
         }
     }
     if (request.rawPath === '/api/start-instance') {
-        return {
-            statusCode: 200,
-            headers: {
-                "Content-Type": "application/json; charset=UTF-8",
-            },
-            body: await api.startInstance(payload.sub, ip),
-            isBase64Encoded: false
-        }
+        return createJsonResponse(await api.startInstance(payload.sub, ip))
+    }
+
+    if (request.rawPath === '/api/hibernate-instance') {
+        return createJsonResponse(await api.hibernateInstance(payload.sub, ip))
+    }
+
+    if (request.rawPath === '/api/terminate-instance') {
+        return createJsonResponse(await api.terminateInstance(payload.sub, ip))
     }
 
     return {

@@ -1,6 +1,42 @@
 const fs = require('fs')
 const AWS = require('aws-sdk')
 
+async function findInstance(region, user) {
+    const EC2 = new AWS.EC2({apiVersion: '2016-11-15', region: region});
+
+    const list = await EC2.describeInstances({
+        Filters: [
+            {Name: 'tag:Name', Values: ['jetbrains']},
+            {Name: 'tag:Owner', Values: [user]},
+            {Name: 'instance-state-name', Values: ['pending', 'running', 'stopping', 'stopped', 'shutting-down']}
+        ]
+
+    }).promise()
+
+    if (list.Reservations.length === 0) {
+        return null
+    }
+
+    return list.Reservations[0].Instances[0]
+}
+
+exports.findInstance = findInstance
+
+exports.terminateInstance = async function (region, instance) {
+    const EC2 = new AWS.EC2({apiVersion: '2016-11-15', region: region});
+    await EC2.terminateInstances({
+        InstanceIds: [instance.InstanceId]
+    }).promise()
+}
+
+exports.hibernateInstance = async function (region, instance) {
+    const EC2 = new AWS.EC2({apiVersion: '2016-11-15', region: region});
+    await EC2.stopInstances({
+        InstanceIds: [instance.InstanceId],
+        Hibernate: true
+    }).promise()
+}
+
 exports.startInstance = async function (user, ip) {
     const region = 'eu-central-1'
     const EC2 = new AWS.EC2({apiVersion: '2016-11-15', region: region});
@@ -117,15 +153,26 @@ exports.startInstance = async function (user, ip) {
         }
     }).promise();*/
 
-    await EC2.runInstances({
-        UserData: Buffer.from(userData, 'utf8').toString('base64'),
-        InstanceType: 'c5a.xlarge',
-        EbsOptimized: true,
-        IamInstanceProfile: {Name: 'ec2_instance_role_jetbrains'},
-        SecurityGroupIds: [securityGroup],
-        SubnetId: 'subnet-0a9dc07f7a36035ff',
-        ImageId: ami,
-        MinCount: 1,
-        MaxCount: 1
-    }).promise()
+    if (!(await findInstance(region, user))) {
+        const instance = await EC2.runInstances({
+            UserData: Buffer.from(userData, 'utf8').toString('base64'),
+            InstanceType: 'c5a.xlarge',
+            EbsOptimized: true,
+            IamInstanceProfile: {Name: 'ec2_instance_role_jetbrains'},
+            SecurityGroupIds: [securityGroup],
+            SubnetId: 'subnet-0a9dc07f7a36035ff',
+            ImageId: ami,
+            MinCount: 1,
+            MaxCount: 1
+        }).promise()
+
+        await EC2.createTags({
+            Resources: [instance.Instances[0].InstanceId],
+            Tags: tags
+        }).promise()
+    }
+
+    return {
+        status: true
+    }
 }
