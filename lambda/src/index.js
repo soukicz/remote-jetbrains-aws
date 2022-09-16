@@ -27,7 +27,7 @@ const paramsGet = async () => {
     })
 };
 
-function createJsonResponse(body) {
+function createJsonResponse(body, status) {
     return {
         statusCode: 200,
         headers: {
@@ -89,16 +89,25 @@ exports.handler = async (request, context, callback) => {
             isBase64Encoded: false
         }
     }
-    if (request.rawPath === '/api/start-instance') {
-        return createJsonResponse(await api.startInstance(payload.sub, ip, request.queryStringParameters.type))
-    }
+    try {
+        if (request.rawPath === '/api/start-instance') {
+            return createJsonResponse(await api.startInstance(payload.sub, ip, request.queryStringParameters.type), 200)
+        }
 
-    if (request.rawPath === '/api/hibernate-instance') {
-        return createJsonResponse(await api.hibernateInstance('eu-central-1', payload.sub))
-    }
+        if (request.rawPath === '/api/hibernate-instance') {
+            return createJsonResponse(await api.hibernateInstance('eu-central-1', payload.sub), 200)
+        }
 
-    if (request.rawPath === '/api/terminate-instance') {
-        return createJsonResponse(await api.terminateInstance('eu-central-1', payload.sub))
+        if (request.rawPath === '/api/terminate-instance') {
+            return createJsonResponse(await api.terminateInstance('eu-central-1', payload.sub), 200)
+        }
+    } catch (err) {
+        console.error(JSON.stringify(err))
+        if (err.errorMessage) {
+            return createJsonResponse({error: err.errorMessage}, 500);
+        }
+
+        return createJsonResponse({error: JSON.stringify(err.errorMessage)}, 500);
     }
 
     return {
