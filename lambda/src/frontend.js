@@ -17,20 +17,26 @@ function callApi(url, button) {
         })
 }
 
-document.querySelector('.start-instance').addEventListener('click', function (e) {
-    e.preventDefault()
+if (document.querySelector('.start-instance')) {
+    document.querySelector('.start-instance').addEventListener('click', function (e) {
+        e.preventDefault()
 
-    callApi('/api/start-instance', this)
-})
+        callApi('/api/start-instance', this)
+    })
+}
 
-document.querySelector('.terminate-instance').addEventListener('click', function (e) {
-    e.preventDefault()
+if (document.querySelector('.terminate-instance')) {
+    document.querySelector('.terminate-instance').addEventListener('click', function (e) {
+        e.preventDefault()
 
-    callApi('/api/terminate-instance', this)
-})
+        callApi('/api/terminate-instance', this)
+    })
+}
 
-document.querySelector('.hibernate-instance').addEventListener('click', function (e) {
-    e.preventDefault()
+if (document.querySelector('.hibernate-instance')) {
+    document.querySelector('.hibernate-instance').addEventListener('click', function (e) {
+        e.preventDefault()
 
-    callApi('/api/hibernate-instance', this)
-})
+        callApi('/api/hibernate-instance', this)
+    })
+}
