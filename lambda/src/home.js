@@ -11,14 +11,12 @@ exports.render = async (user) => {
 
     const instance = await api.findInstance('eu-central-1', user)
     console.log(JSON.stringify(instance))
-    if (!instance || instance.State.Name === 'running') {
-        if (instance) {
-            html += `
+    if (instance && instance.State.Name === 'running') {
+        html += `
         <div> Status: ${instance.State.Name}</div>
             <br>
             <h4>IP: ${instance.PublicIpAddress}</h4>
             `
-        }
         html += `
 
 <a href="#" class="btn btn-warning btn-lg px-4 hibernate-instance"><i class="fa fa-stop"></i> Stop instance</a>
@@ -27,7 +25,7 @@ exports.render = async (user) => {
     `
 
     } else {
-        if (instance.State.Name === 'stopped') {
+        if (instance && instance.State.Name === 'stopped') {
             html += `
 <a href="#" class="btn btn-danger btn-lg px-4 terminate-instance"><i class="fa fa-stop"></i> Terminate instance</a>
     `
