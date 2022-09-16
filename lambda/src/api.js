@@ -179,6 +179,14 @@ exports.startInstance = async function (user, ip, instanceType) {
             InstanceType: instanceType,
             EbsOptimized: true,
             IamInstanceProfile: {Name: 'ec2_instance_role_jetbrains'},
+            BlockDeviceMappings: [
+                {
+                    "DeviceName": "/dev/xvda",
+                    "Ebs": {
+                        "Encrypted": true,
+                    }
+                }
+            ],
             SecurityGroupIds: [securityGroup],
             SubnetId: 'subnet-0a9dc07f7a36035ff',
             ImageId: ami,
