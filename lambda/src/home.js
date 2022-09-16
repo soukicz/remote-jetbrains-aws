@@ -30,9 +30,9 @@ exports.render = async (user) => {
 <a href="#" class="btn btn-danger btn-lg px-4 terminate-instance"><i class="fa fa-stop"></i> Terminate instance</a>
     `
         }
-        html += `<a href="#" class="btn btn-primary btn-lg px-4 start-instance">Start instance</a>
+        html += `<a href="#" class="btn btn-succes btn-lg px-4 start-instance">Start instance</a>
     `
     }
 
-    return render(html);
+    return render(html, user);
 }
