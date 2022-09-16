@@ -1,6 +1,6 @@
-function callApi(url) {
+function callApi(url, button) {
     document.querySelector('.loading').style.display = 'block'
-    this.style.display = 'none'
+    button.style.display = 'none'
 
 
     fetch(url)
@@ -10,7 +10,7 @@ function callApi(url) {
         })
         .catch(err => {
             document.querySelector('.loading').style.display = 'none'
-            this.style.display = 'none'
+            button.style.display = 'none'
 
             document.querySelector('.alert-danger').style.display = 'block'
             document.querySelector('.alert-danger').textContent = JSON.stringify(err)
@@ -20,17 +20,17 @@ function callApi(url) {
 document.querySelector('.start-instance').addEventListener('click', function (e) {
     e.preventDefault()
 
-    callApi('/api/start-instance')
+    callApi('/api/start-instance', this)
 })
 
 document.querySelector('.terminate-instance').addEventListener('click', function (e) {
     e.preventDefault()
 
-    callApi('/api/terminate-instance')
+    callApi('/api/terminate-instance', this)
 })
 
 document.querySelector('.hibernate-instance').addEventListener('click', function (e) {
     e.preventDefault()
 
-    callApi('/api/hibernate-instance')
+    callApi('/api/hibernate-instance', this)
 })
