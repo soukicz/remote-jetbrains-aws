@@ -16,7 +16,7 @@ exports.render = async (user) => {
         <div> Status: ${instance.State.Name}</div>
             <br>
             <h4>IP: ${instance.PublicIpAddress}</h4>
-            `
+            <br>`
         html += `
 
 <a href="#" class="btn btn-warning btn-lg px-4 hibernate-instance"><i class="fa fa-stop"></i> Stop instance</a>
