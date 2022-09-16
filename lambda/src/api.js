@@ -31,6 +31,8 @@ exports.terminateInstance = async function (region) {
     await EC2.terminateInstances({
         InstanceIds: [instance.InstanceId]
     }).promise()
+    
+    return {status: true}
 }
 
 exports.hibernateInstance = async function (region) {
@@ -44,6 +46,8 @@ exports.hibernateInstance = async function (region) {
         Hibernate: true
     }).promise()
     await EC2.waitFor('instanceStopped', {InstanceIds: [instance]}).promise()
+
+    return {status: true}
 }
 
 exports.startInstance = async function (user, ip) {
