@@ -11,7 +11,7 @@ exports.render = async (user) => {
 
     const instance = await api.findInstance('eu-central-1', user)
     console.log(JSON.stringify(instance))
-    if (instance && instance.State.Name === 'running') {
+    if (instance && ['pending', 'running'].indexOf(instance.State.Name) > -1) {
         html += `
         <div> Status: ${instance.State.Name}</div>
             <br>
