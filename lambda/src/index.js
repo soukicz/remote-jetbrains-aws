@@ -94,11 +94,11 @@ exports.handler = async (request, context, callback) => {
     }
 
     if (request.rawPath === '/api/hibernate-instance') {
-        return createJsonResponse(await api.hibernateInstance(payload.sub, ip))
+        return createJsonResponse(await api.hibernateInstance(payload.sub))
     }
 
     if (request.rawPath === '/api/terminate-instance') {
-        return createJsonResponse(await api.terminateInstance(payload.sub, ip))
+        return createJsonResponse(await api.terminateInstance(payload.sub))
     }
 
     return {

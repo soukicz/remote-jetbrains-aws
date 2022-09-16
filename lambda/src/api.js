@@ -22,19 +22,28 @@ async function findInstance(region, user) {
 
 exports.findInstance = findInstance
 
-exports.terminateInstance = async function (region, instance) {
+exports.terminateInstance = async function (region) {
+    const instance = await findInstance(region)
+    if (!instance) {
+        return
+    }
     const EC2 = new AWS.EC2({apiVersion: '2016-11-15', region: region});
     await EC2.terminateInstances({
         InstanceIds: [instance.InstanceId]
     }).promise()
 }
 
-exports.hibernateInstance = async function (region, instance) {
+exports.hibernateInstance = async function (region) {
+    const instance = await findInstance(region)
+    if (!instance) {
+        return
+    }
     const EC2 = new AWS.EC2({apiVersion: '2016-11-15', region: region});
     await EC2.stopInstances({
         InstanceIds: [instance.InstanceId],
         Hibernate: true
     }).promise()
+    await EC2.waitFor('instanceStopped', {InstanceIds: [instance]}).promise()
 }
 
 exports.startInstance = async function (user, ip) {
@@ -170,6 +179,8 @@ exports.startInstance = async function (user, ip) {
             Resources: [instance.Instances[0].InstanceId],
             Tags: tags
         }).promise()
+
+        await EC2.waitFor('instanceExists', {InstanceIds: [instance.Instances[0].InstanceId]}).promise()
     }
 
     return {
