@@ -1,7 +1,8 @@
 function callApi(url, button) {
     document.querySelector('.loading').style.display = 'block'
-    button.style.display = 'none'
-
+    document.querySelectorAll('.btn').forEach(btn => {
+        btn.style.display = 'none'
+    })
 
     fetch(url)
         .then((response) => response.json())
@@ -10,7 +11,9 @@ function callApi(url, button) {
         })
         .catch(err => {
             document.querySelector('.loading').style.display = 'none'
-            button.style.display = 'none'
+            document.querySelectorAll('.btn').forEach(btn => {
+                btn.style.display = 'none'
+            })
 
             document.querySelector('.alert-danger').style.display = 'block'
             document.querySelector('.alert-danger').textContent = JSON.stringify(err)
