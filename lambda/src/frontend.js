@@ -10,4 +10,11 @@ document.querySelector('.start-instance').addEventListener('click', function (e)
         .then((data) => {
             window.location.reload()
         })
+        .catch(err => {
+            document.querySelector('.loading').style.display = 'none'
+            this.style.display = 'none'
+
+            document.querySelector('.alert-danger').style.display = 'block'
+            document.querySelector('.alert-danger').textContent = JSON.stringify(err)
+        })
 })
