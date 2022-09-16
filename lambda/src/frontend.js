@@ -1,4 +1,4 @@
-function callApi(url, button) {
+function callApi(url) {
     document.querySelector('.loading').style.display = 'block'
     document.querySelectorAll('.btn').forEach(btn => {
         btn.style.display = 'none'
