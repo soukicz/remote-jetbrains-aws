@@ -25,7 +25,7 @@ exports.findInstance = findInstance
 exports.terminateInstance = async function (region) {
     const instance = await findInstance(region)
     if (!instance) {
-        return
+        return {status: true}
     }
     const EC2 = new AWS.EC2({apiVersion: '2016-11-15', region: region});
     await EC2.terminateInstances({
@@ -39,7 +39,7 @@ exports.hibernateInstance = async function (region) {
     const instance = await findInstance(region)
     console.log(JSON.stringify(instance))
     if (!instance) {
-        return
+        return {status: true}
     }
     const EC2 = new AWS.EC2({apiVersion: '2016-11-15', region: region});
     await EC2.stopInstances({
