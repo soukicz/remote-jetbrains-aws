@@ -25,10 +25,10 @@ sleep 5
 chown ec2-user:ec2-user /home/ec2-user
 chmod 700 /home/ec2-user
 
-if [ ! -d /home/ec2-user/.ssh ] ; then
-  mkdir /home/ec2-user/.ssh
-  chmod 700 /home/ec2-user/.ssh
-  echo "%key%" > /home/ec2-user/.ssh/authorized_keys
-  chmod 600 /home/ec2-user/.ssh/authorized_keys
-  chown -R ec2-user:ec2-user /home/ec2-user/.ssh
-fi;
+[ ! -d /home/ec2-user/.ssh ] && mkdir /home/ec2-user/.ssh
+
+chmod 700 /home/ec2-user/.ssh
+echo "%key%" > /home/ec2-user/.ssh/authorized_keys
+chmod 600 /home/ec2-user/.ssh/authorized_keys
+chown -R ec2-user:ec2-user /home/ec2-user/.ssh
+
