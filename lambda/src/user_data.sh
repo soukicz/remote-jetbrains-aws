@@ -8,9 +8,7 @@ INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
 
 ## EBS
 aws ec2 attach-volume --volume-id "%ebs_id%" --device /dev/xvde  --instance-id "$INSTANCE_ID" --region "%region%"
-#while [ ! -e /dev/xvde ] ; do sleep 1 ; done
-
-sleep 5
+while [ ! -e /dev/xvde ] ; do sleep 1 ; done
 
 DEVICE=${realpath /dev/xvde}
 
@@ -27,7 +25,7 @@ sleep 5
 chown ec2-user:ec2-user /home/ec2-user
 chmod 700 /home/ec2-user
 
-if [ -d /home/ec2-user/.ssh ] ; then
+if [ ! -d /home/ec2-user/.ssh ] ; then
   mkdir /home/ec2-user/.ssh
   chmod 700 /home/ec2-user/.ssh
   echo "%key%" > /home/ec2-user/.ssh/authorized_keys
