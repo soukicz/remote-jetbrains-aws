@@ -269,7 +269,8 @@ exports.migrate = async function (user, fromRegion, targetRegion) {
     await (new AWS.SSM({region: 'eu-central-1'}))
         .putParameter({
             Name: '/ec2/region/' + user.replace('@', '-'),
-            Value: targetRegion
+            Value: targetRegion,
+            Overwrite: true
         }).promise()
 
     await EC2from.deleteVolume({
