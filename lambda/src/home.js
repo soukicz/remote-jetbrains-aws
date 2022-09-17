@@ -49,7 +49,7 @@ exports.render = async (user, region) => {
                 <li><a class="dropdown-item start-instance" data-type="c5.4xlarge" href="#">c5.4xlarge</a></li>
               </ul>
             </div>`
-            html += `&nbsp;&nbsp;&nbsp; 
+            html += `<br><br> 
                 <div class="dropdown">
                   <button class="btn btn-warning dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Migrate from ${region}
