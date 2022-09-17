@@ -237,7 +237,7 @@ exports.migrate = async function (user, fromRegion, targetRegion) {
     const fromVolume = await findVolume(fromRegion, user)
 
     const snapshot = await EC2from.createSnapshot({
-        Description: 'migrate',
+        Description: 'migrate-to-' + targetRegion,
         VolumeId: fromVolume.VolumeId,
     }).promise()
 
@@ -246,7 +246,8 @@ exports.migrate = async function (user, fromRegion, targetRegion) {
     const newSnapshot = await EC2target.copySnapshot({
         SourceRegion: fromRegion,
         DestinationRegion: targetRegion,
-        SourceSnapshotId: snapshot.SnapshotId
+        SourceSnapshotId: snapshot.SnapshotId,
+        Description: 'migrate-from-' + fromRegion
     }).promise()
 
     await EC2target.waitFor('snapshotCompleted', {SnapshotIds: [newSnapshot.SnapshotId]}).promise()
