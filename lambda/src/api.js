@@ -99,6 +99,7 @@ async function findVpc(region) {
 exports.startInstance = async function (region, user, ip, instanceType) {
     const EC2 = new AWS.EC2({apiVersion: '2016-11-15', region: region});
     const SSM = new AWS.SSM({region: 'eu-central-1'})
+    const SSMlocal= new AWS.SSM({region: region})
 
     const filterTags = [
         {Name: 'tag:Name', Values: ['jetbrains']},
@@ -109,7 +110,7 @@ exports.startInstance = async function (region, user, ip, instanceType) {
         {Key: 'Owner', Value: user},
     ]
 
-    const ami = JSON.parse((await SSM.getParameter({
+    const ami = JSON.parse((await SSMlocal.getParameter({
         Name: '/aws/service/ecs/optimized-ami/amazon-linux-2/recommended',
         WithDecryption: true
     }).promise()).Parameter.Value).image_id
