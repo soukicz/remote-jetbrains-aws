@@ -55,8 +55,39 @@ exports.hibernateInstance = async function (region, user) {
     return {status: true}
 }
 
-exports.startInstance = async function (user, ip, instanceType) {
-    const region = 'eu-central-1'
+async function findVolume(region, user, snapshot) {
+    const EC2 = new AWS.EC2({apiVersion: '2016-11-15', region: region});
+    const filterTags = [
+        {Name: 'tag:Name', Values: ['jetbrains']},
+        {Name: 'tag:Owner', Values: [user]}
+    ]
+    const tags = [
+        {Key: 'Name', Value: 'jetbrains'},
+        {Key: 'Owner', Value: user},
+    ]
+    const volumes = (await EC2.describeVolumes({
+        Filters: filterTags
+    }).promise()).Volumes
+    if (volumes.length === 0) {
+        const volume = (await EC2.createVolume({
+            VolumeType: 'gp3',
+            Size: 30,
+            AvailabilityZone: `${region}a`,
+            SnapshotId: snapshot ? snapshot : null
+        }).promise())
+
+        await EC2.createTags({
+            Resources: [volume.VolumeId],
+            Tags: tags
+        }).promise()
+
+        await EC2.waitFor('volumeAvailable', {VolumeIds: [volume.VolumeId]}).promise()
+        return volume
+    }
+    return volumes[0]
+}
+
+exports.startInstance = async function (region, user, ip, instanceType) {
     const EC2 = new AWS.EC2({apiVersion: '2016-11-15', region: region});
     const SSM = new AWS.SSM({region: region})
 
@@ -79,27 +110,7 @@ exports.startInstance = async function (user, ip, instanceType) {
         WithDecryption: true
     }).promise()).Parameter.Value
 
-    const volumes = (await EC2.describeVolumes({
-        Filters: filterTags
-    }).promise()).Volumes
-
-    let volume;
-    if (volumes.length === 0) {
-        volume = (await EC2.createVolume({
-            VolumeType: 'gp3',
-            Size: 30,
-            AvailabilityZone: `${region}a`,
-        }).promise())
-
-        await EC2.createTags({
-            Resources: [volume.VolumeId],
-            Tags: tags
-        }).promise()
-
-        await EC2.waitFor('volumeAvailable', {VolumeIds: [volume.VolumeId]}).promise()
-    } else {
-        volume = volumes[0]
-    }
+    let volume = await findVolume(region, user);
 
     const securityGroups = (await EC2.describeSecurityGroups({
         Filters: filterTags
@@ -217,4 +228,38 @@ exports.startInstance = async function (user, ip, instanceType) {
     return {
         status: true
     }
+}
+
+exports.migrate = async function (user, fromRegion, targetRegion) {
+    const EC2from = new AWS.EC2({apiVersion: '2016-11-15', region: fromRegion});
+    const EC2target = new AWS.EC2({apiVersion: '2016-11-15', region: fromRegion});
+
+    const fromVolume = await findVolume(fromRegion, user)
+
+    const snapshot = await EC2from.createSnapshot({
+        Name: 'migrate',
+        Description: 'migrate',
+        VolumeId: fromVolume.VolumeId,
+    }).promise()
+
+    await EC2from.waitFor('snapshotCompleted', {SnapshotId: snapshot.SnapshotId}).promise()
+
+    const newSnapshot = await EC2target.copySnapshot({
+        SourceRegion: fromRegion,
+        DestinationRegion: targetRegion,
+        SourceSnapshotId: snapshot.SnapshotId
+    }).promise()
+
+    await findVolume(targetRegion, user, newSnapshot.SnapshotId)
+
+    await (new AWS.SSM({region: 'eu-central-1'}))
+        .putParameter({
+            Name: '/ec2/region/' + user.replace('@', '-'),
+            Value: targetRegion
+        }).promise()
+
+    await EC2from.deleteVolume({
+        VolumeId: fromVolume.VolumeId
+    }).promise()
+
 }

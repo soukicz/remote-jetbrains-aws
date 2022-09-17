@@ -31,6 +31,14 @@ document.querySelectorAll('.start-instance').forEach(function (button) {
     })
 });
 
+document.querySelectorAll('.migrate-instance').forEach(function (button) {
+    button.addEventListener('click', function (e) {
+        e.preventDefault()
+
+        callApi('/api/migrate-instance?type=' + encodeURIComponent(this.dataset.region), this)
+    })
+});
+
 document.querySelectorAll('.terminate-instance').forEach(function (button) {
     button.addEventListener('click', function (e) {
         e.preventDefault()

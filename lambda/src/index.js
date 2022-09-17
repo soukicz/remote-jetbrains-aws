@@ -79,27 +79,36 @@ exports.handler = async (request, context, callback) => {
     }
     console.log(JSON.stringify(payload))
 
+    const region = (await (new AWS.SSM({region: 'eu-central-1'}))
+        .getParameter({
+            Path: '/ec2/region/' + payload.sub.replace('@', '-'),
+            WithDecryption: true
+        }).promise()).Parameter.Value
+
     if (request.rawPath === '/') {
         return {
             statusCode: 200,
             headers: {
                 "Content-Type": "text/html; charset=UTF-8",
             },
-            body: await home.render(payload.sub),
+            body: await home.render(payload.sub, region),
             isBase64Encoded: false
         }
     }
     try {
         if (request.rawPath === '/api/start-instance') {
-            return createJsonResponse(await api.startInstance(payload.sub, ip, request.queryStringParameters.type), 200)
+            return createJsonResponse(await api.startInstance(region, payload.sub, ip, request.queryStringParameters.type), 200)
         }
 
         if (request.rawPath === '/api/hibernate-instance') {
-            return createJsonResponse(await api.hibernateInstance('eu-central-1', payload.sub), 200)
+            return createJsonResponse(await api.hibernateInstance(region, payload.sub), 200)
         }
 
         if (request.rawPath === '/api/terminate-instance') {
-            return createJsonResponse(await api.terminateInstance('eu-central-1', payload.sub), 200)
+            return createJsonResponse(await api.terminateInstance(region, payload.sub), 200)
+        }
+        if (request.rawPath === '/api/migrate-instance') {
+            return createJsonResponse(await api.migrate(payload.sub, region, request.queryStringParameters.target), 200)
         }
     } catch (err) {
         console.error(JSON.stringify(err))
