@@ -87,6 +87,15 @@ async function findVolume(region, user, snapshot) {
     return volumes[0]
 }
 
+async function findVpc(region) {
+    const EC2 = new AWS.EC2({apiVersion: '2016-11-15', region: region});
+    return (await EC2.describeVpcs({
+        Filters: [
+            {Name: 'is-default', Values: ['true']}
+        ]
+    }).promise()).Vpcs[0].VpcId
+}
+
 exports.startInstance = async function (region, user, ip, instanceType) {
     const EC2 = new AWS.EC2({apiVersion: '2016-11-15', region: region});
     const SSM = new AWS.SSM({region: region})
@@ -118,11 +127,7 @@ exports.startInstance = async function (region, user, ip, instanceType) {
 
     let securityGroup
     if (securityGroups.length === 0) {
-        const vpc = (await EC2.describeVpcs({
-            Filters: [
-                {Name: 'is-default', Values: ['true']}
-            ]
-        }).promise()).Vpcs[0].VpcId
+        const vpc = await findVpc(region)
 
         securityGroup = (await EC2.createSecurityGroup({
             GroupName: 'jetbrains-' + user.replace(/[^a-z\d]/g, ''),
@@ -196,6 +201,13 @@ exports.startInstance = async function (region, user, ip, instanceType) {
             }).promise()
         }
     } else if (!(await findInstance(region, user))) {
+        const subnet = (await EC2.describeSubnets({
+            Filters: [
+                {Name: 'availability-zone', Values: [`${region}a`]},
+                {Name: 'vpc-id', Values: [await findVpc(region)]}
+            ]
+        }).promise()).Subnets[0].SubnetId
+
         const instance = await EC2.runInstances({
             UserData: Buffer.from(userData, 'utf8').toString('base64'),
             InstanceType: instanceType,
@@ -210,7 +222,7 @@ exports.startInstance = async function (region, user, ip, instanceType) {
                 }
             ],
             SecurityGroupIds: [securityGroup],
-            SubnetId: 'subnet-0a9dc07f7a36035ff',
+            SubnetId: subnet,
             ImageId: ami,
             HibernationOptions: {Configured: true},
             MinCount: 1,
