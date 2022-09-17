@@ -1,3 +1,4 @@
+const AWS = require('aws-sdk')
 const render = require('./render').render
 const api = require('./api')
 
@@ -54,14 +55,22 @@ exports.render = async (user, region) => {
                   <button class="btn btn-warning dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Migrate from ${region}
                   </button>
-                  <ul class="dropdown-menu">
-                    <li><a class="dropdown-item migrate-instance" data-region="eu-central-1" href="#">eu-central-1</a></li>
-                    <li><a class="dropdown-item migrate-instance" data-region="eu-west-1" href="#">eu-west-1</a></li>
-                    <li><a class="dropdown-item migrate-instance" data-region="eu-west-2" href="#">eu-west-2</a></li>
-                    <li><a class="dropdown-item migrate-instance" data-region="eu-west-3" href="#">eu-west-3</a></li>
-                    <li><a class="dropdown-item migrate-instance" data-region="eu-north-3" href="#">eu-north-3</a></li>
-                    <li><a class="dropdown-item migrate-instance" data-region="af-south-1" href="#">af-south-1</a></li>
-                  </ul>
+                  <ul class="dropdown-menu">`
+
+            const EC2 = new AWS.EC2({apiVersion: '2016-11-15', region: 'eu-central-1'});
+            const regions = (await EC2.describeRegions({
+                Filters: [
+                    {Name: 'opt-in-status', Values: ['opt-in-not-required', 'opted-in']}
+                ]
+            }).promise()).Regions
+            for (const otherRegion of regions) {
+                if (otherRegion.RegionName === region) {
+                    continue
+                }
+                html += `<li><a class="dropdown-item migrate-instance" data-region="${otherRegion.RegionName}" href="#">${otherRegion.RegionName}</a></li>`
+            }
+
+            html += `</ul>
                 </div>`
         }
     }
