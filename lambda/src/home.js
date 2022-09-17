@@ -63,11 +63,14 @@ exports.render = async (user, region) => {
                     {Name: 'opt-in-status', Values: ['opt-in-not-required', 'opted-in']}
                 ]
             }).promise()).Regions
-            for (const otherRegion of regions) {
-                if (otherRegion.RegionName === region) {
-                    continue
-                }
-                html += `<li><a class="dropdown-item migrate-instance" data-region="${otherRegion.RegionName}" href="#">${otherRegion.RegionName}</a></li>`
+                .filter(otherRegion => {
+                    return otherRegion.RegionName !== region
+                }).map(otherRegion => {
+                    return otherRegion.RegionName
+                })
+
+            for (const otherRegion of regions.sort()) {
+                html += `<li><a class="dropdown-item migrate-instance" data-region="${otherRegion}" href="#">${otherRegion}</a></li>`
             }
 
             html += `</ul>
