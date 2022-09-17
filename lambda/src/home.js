@@ -50,7 +50,7 @@ exports.render = async (user, region) => {
               </ul>
             </div>`
             html += `&nbsp;&nbsp;&nbsp; <div class="btn-group">
-              <button type="button" class="btn btn-warning start-instance" data-type="c5.large" >Migrate</button>
+              <button type="button" class="btn btn-warning start-instance" data-type="c5.large" >Migrate from ${region}</button>
               <button type="button" class="btn btn-warning dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="visually-hidden">Toggle Dropdown</span>
               </button>
