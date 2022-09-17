@@ -277,4 +277,7 @@ exports.migrate = async function (user, fromRegion, targetRegion) {
         VolumeId: fromVolume.VolumeId
     }).promise()
 
+    return {
+        status: true
+    }
 }
