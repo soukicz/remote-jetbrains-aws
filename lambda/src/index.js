@@ -1,4 +1,5 @@
 "use strict";
+const fs = require('fs')
 const AWS = require('aws-sdk')
 const auth = require('./auth')
 const home = require('./home')
@@ -95,6 +96,17 @@ exports.handler = async (request, context, callback) => {
             isBase64Encoded: false
         }
     }
+    if (request.rawPath === '/favicon.ico') {
+        return {
+            statusCode: 200,
+            headers: {
+                "Content-Type": "image/ico",
+            },
+            body: fs.readFileSync(__dirname + '/../favicon.ico', 'base64'),
+            isBase64Encoded: true
+        }
+    }
+
     try {
         if (request.rawPath === '/api/start-instance') {
             return createJsonResponse(await api.startInstance(region, payload.sub, ip, request.queryStringParameters.type), 200)
