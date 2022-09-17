@@ -49,9 +49,9 @@ exports.render = async (user, region) => {
                 <li><a class="dropdown-item start-instance" data-type="c5.4xlarge" href="#">c5.4xlarge</a></li>
               </ul>
             </div>`
-            html += `<div class="btn-group">
-              <button type="button" class="btn btn-success start-instance" data-type="c5.large" >Migrate</button>
-              <button type="button" class="btn btn-success dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+            html += `&nbsp;&nbsp;&nbsp; <div class="btn-group">
+              <button type="button" class="btn btn-warning start-instance" data-type="c5.large" >Migrate</button>
+              <button type="button" class="btn btn-warning dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="visually-hidden">Toggle Dropdown</span>
               </button>
               <ul class="dropdown-menu">
