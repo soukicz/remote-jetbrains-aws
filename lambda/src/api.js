@@ -232,7 +232,7 @@ exports.startInstance = async function (region, user, ip, instanceType) {
 
 exports.migrate = async function (user, fromRegion, targetRegion) {
     const EC2from = new AWS.EC2({apiVersion: '2016-11-15', region: fromRegion});
-    const EC2target = new AWS.EC2({apiVersion: '2016-11-15', region: fromRegion});
+    const EC2target = new AWS.EC2({apiVersion: '2016-11-15', region: targetRegion});
 
     const fromVolume = await findVolume(fromRegion, user)
 
