@@ -1,6 +1,6 @@
 function callApi(url) {
     document.querySelector('.loading').style.display = 'block'
-    document.querySelectorAll('.btn, .btn-group').forEach(btn => {
+    document.querySelectorAll('.btn, .btn-group, .dropdown').forEach(btn => {
         btn.style.display = 'none'
     })
 
@@ -14,7 +14,7 @@ function callApi(url) {
         })
         .catch(err => {
             document.querySelector('.loading').style.display = 'none'
-            document.querySelectorAll('.btn, .btn-group').forEach(btn => {
+            document.querySelectorAll('.btn, .btn-group, .dropdown').forEach(btn => {
                 btn.style.display = 'none'
             })
 

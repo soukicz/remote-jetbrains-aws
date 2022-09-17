@@ -49,20 +49,20 @@ exports.render = async (user, region) => {
                 <li><a class="dropdown-item start-instance" data-type="c5.4xlarge" href="#">c5.4xlarge</a></li>
               </ul>
             </div>`
-            html += `&nbsp;&nbsp;&nbsp; <div class="btn-group">
-              <button type="button" class="btn btn-warning start-instance" data-type="c5.large" >Migrate from ${region}</button>
-              <button type="button" class="btn btn-warning dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-                <span class="visually-hidden">Toggle Dropdown</span>
-              </button>
-              <ul class="dropdown-menu">
-                <li><a class="dropdown-item migrate-instance" data-region="eu-central-1" href="#">eu-central-1</a></li>
-                <li><a class="dropdown-item migrate-instance" data-region="eu-west-1" href="#">eu-west-1</a></li>
-                <li><a class="dropdown-item migrate-instance" data-region="eu-west-2" href="#">eu-west-2</a></li>
-                <li><a class="dropdown-item migrate-instance" data-region="eu-west-3" href="#">eu-west-3</a></li>
-                <li><a class="dropdown-item migrate-instance" data-region="eu-north-3" href="#">eu-north-3</a></li>
-                <li><a class="dropdown-item migrate-instance" data-region="af-south-1" href="#">af-south-1</a></li>
-              </ul>
-            </div>`
+            html += `&nbsp;&nbsp;&nbsp; 
+                <div class="dropdown">
+                  <button class="btn btn-warning dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Migrate from ${region}
+                  </button>
+                  <ul class="dropdown-menu">
+                    <li><a class="dropdown-item migrate-instance" data-region="eu-central-1" href="#">eu-central-1</a></li>
+                    <li><a class="dropdown-item migrate-instance" data-region="eu-west-1" href="#">eu-west-1</a></li>
+                    <li><a class="dropdown-item migrate-instance" data-region="eu-west-2" href="#">eu-west-2</a></li>
+                    <li><a class="dropdown-item migrate-instance" data-region="eu-west-3" href="#">eu-west-3</a></li>
+                    <li><a class="dropdown-item migrate-instance" data-region="eu-north-3" href="#">eu-north-3</a></li>
+                    <li><a class="dropdown-item migrate-instance" data-region="af-south-1" href="#">af-south-1</a></li>
+                  </ul>
+                </div>`
         }
     }
 
