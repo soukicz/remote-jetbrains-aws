@@ -179,7 +179,10 @@ exports.startInstance = async function (user, ip, instanceType) {
         if (['stopped', 'stopping'].indexOf(existingInstance.State.Name) > -1) {
             await EC2.startInstances({
                 InstanceIds: [existingInstance.InstanceId]
-            })
+            }).promise()
+            await EC2.waitFor('instanceRunning', {
+                InstanceIds: [existingInstance.InstanceId]
+            }).promise()
         }
     } else if (!(await findInstance(region, user))) {
         const instance = await EC2.runInstances({
