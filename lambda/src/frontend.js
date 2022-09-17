@@ -35,7 +35,7 @@ document.querySelectorAll('.migrate-instance').forEach(function (button) {
     button.addEventListener('click', function (e) {
         e.preventDefault()
 
-        callApi('/api/migrate-instance?region=' + encodeURIComponent(this.dataset.region), this)
+        callApi('/api/migrate-instance?target=' + encodeURIComponent(this.dataset.region), this)
     })
 });
 
