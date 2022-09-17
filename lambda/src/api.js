@@ -249,6 +249,8 @@ exports.migrate = async function (user, fromRegion, targetRegion) {
         SourceSnapshotId: snapshot.SnapshotId
     }).promise()
 
+    await EC2target.waitFor('snapshotCompleted', {SnapshotId: newSnapshot.SnapshotId}).promise()
+
     await findVolume(targetRegion, user, newSnapshot.SnapshotId)
 
     await (new AWS.SSM({region: 'eu-central-1'}))
