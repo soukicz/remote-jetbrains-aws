@@ -39,6 +39,8 @@ exports.render = (html, user) => {
   </main>
   <footer class="pt-5 my-5 text-muted border-top">
     <a href="https://www.souki.cz">Petr Soukup</a> &copy; 2022
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="https://ping.psa.fun/">latency test</a>
   </footer>
 </div>
 
