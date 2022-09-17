@@ -140,10 +140,6 @@ exports.startInstance = async function (region, user, ip, instanceType) {
             Tags: tags
         }).promise()
 
-        securityGroup = (await EC2.describeSecurityGroups({
-            GroupIds: [securityGroup]
-        }).promise()).SecurityGroups[0]
-
     } else {
         securityGroup = securityGroups[0].GroupId
     }
