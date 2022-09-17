@@ -82,7 +82,7 @@ exports.handler = async (request, context, callback) => {
 
     const region = (await (new AWS.SSM({region: 'eu-central-1'}))
         .getParameter({
-            Path: '/ec2/region/' + payload.sub.replace('@', '-'),
+            Name: '/ec2/region/' + payload.sub.replace('@', '-'),
             WithDecryption: true
         }).promise()).Parameter.Value
 
