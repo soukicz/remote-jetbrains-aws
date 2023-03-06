@@ -39,15 +39,23 @@ exports.render = async (user, region) => {
             html += `<a href="#" class="btn btn-success btn-lg px-4 start-instance">Start instance</a>`
         } else {
             html += `<div class="btn-group">
-              <button type="button" class="btn btn-success start-instance" data-type="r6a.large" >Start instance</button>
+              <button type="button" class="btn btn-success start-instance" data-type="r5a.large" >Start instance</button>
               <button type="button" class="btn btn-success dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="visually-hidden">Toggle Dropdown</span>
               </button>
               <ul class="dropdown-menu">
+              <li><a class="dropdown-item start-instance" data-type="c5a.large" href="#">c5a.large</a></li>
+              <li><a class="dropdown-item start-instance" data-type="c5a.xlarge" href="#">c5a.xlarge</a></li>
+              <li><a class="dropdown-item start-instance" data-type="c5a.2xlarge" href="#">c5a.2xlarge</a></li>
+              <li><a class="dropdown-item start-instance" data-type="c5a.4xlarge" href="#">c5a.4xlarge</a></li>
               <li><a class="dropdown-item start-instance" data-type="c6a.large" href="#">c6a.large</a></li>
               <li><a class="dropdown-item start-instance" data-type="c6a.xlarge" href="#">c6a.xlarge</a></li>
               <li><a class="dropdown-item start-instance" data-type="c6a.2xlarge" href="#">c6a.2xlarge</a></li>
               <li><a class="dropdown-item start-instance" data-type="c6a.4xlarge" href="#">c6a.4xlarge</a></li>
+              <li><a class="dropdown-item start-instance" data-type="r5a.large" href="#">r5a.large</a></li>
+              <li><a class="dropdown-item start-instance" data-type="r5a.xlarge" href="#">r5a.xlarge</a></li>
+              <li><a class="dropdown-item start-instance" data-type="r5a.2xlarge" href="#">r5a.2xlarge</a></li>
+              <li><a class="dropdown-item start-instance" data-type="r5a.4xlarge" href="#">r5a.4xlarge</a></li>
               <li><a class="dropdown-item start-instance" data-type="r6a.large" href="#">r6a.large</a></li>
               <li><a class="dropdown-item start-instance" data-type="r6a.xlarge" href="#">r6a.xlarge</a></li>
               <li><a class="dropdown-item start-instance" data-type="r6a.2xlarge" href="#">r6a.2xlarge</a></li>
