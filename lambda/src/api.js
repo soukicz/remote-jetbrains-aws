@@ -174,7 +174,7 @@ exports.startInstance = async function (region, user, ip, instanceType) {
         .replace(/%awsKey%/g, aliasCredentials.Credentials.SecretAccessKey)
         .replace(/%awsToken%/g, aliasCredentials.Credentials.SessionToken)
         .replace(/%hostedZone%/g, process.env.ALIAS_HOSTED_ZONE)
-        .replace(/%domain%/g, `${user.replace('@', '')}.${process.env.ALIAS_DOMAIN}`)
+        .replace(/%domain%/g, `${user.replace(/[@.]/g, '-')}.${process.env.ALIAS_DOMAIN}`)
 
     /*await EC2.requestSpotFleet({
         SpotFleetRequestConfig: {
