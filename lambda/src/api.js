@@ -145,7 +145,7 @@ exports.startInstance = async function (region, user, ip, instanceType) {
         securityGroup = securityGroups[0].GroupId
     }
 
-    for (const port of [22, 80, 443]) {
+    for (const port of [22]) {
         try {
             await EC2.authorizeSecurityGroupIngress({
                 GroupId: securityGroup,
