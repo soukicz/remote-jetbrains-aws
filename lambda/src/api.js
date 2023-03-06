@@ -163,7 +163,7 @@ exports.startInstance = async function (region, user, ip, instanceType) {
     const aliasCredentials = await sts.assumeRole({
         RoleArn: process.env.ALIAS_ROLE_ARN,
         RoleSessionName: user.replace('@', ''),
-        DurationSeconds: 10 * 60
+        DurationSeconds: 15 * 60
     }).promise()
 
     const userData = fs.readFileSync(`${__dirname}/user_data.sh`, 'utf8')
