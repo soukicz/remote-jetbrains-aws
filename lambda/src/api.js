@@ -159,10 +159,22 @@ exports.startInstance = async function (region, user, ip, instanceType) {
         }
     }
 
+    const sts = new AWS.STS({apiVersion: '2011-06-15'});
+    const aliasCredentials = await sts.assumeRole({
+        RoleArn: process.env.ALIAS_ROLE_ARN,
+        RoleSessionName: user.replace('@', ''),
+        DurationSeconds: 10 * 60
+    }).promise()
+
     const userData = fs.readFileSync(`${__dirname}/user_data.sh`, 'utf8')
         .replace(/%ebs_id%/g, volume.VolumeId)
         .replace(/%region%/g, region)
         .replace(/%key%/g, sshKey)
+        .replace(/%awsId%/g, aliasCredentials.Credentials.AccessKeyId)
+        .replace(/%awsKey%/g, aliasCredentials.Credentials.SecretAccessKey)
+        .replace(/%awsToken%/g, aliasCredentials.Credentials.SessionToken)
+        .replace(/%hostedZone%/g, process.env.ALIAS_HOSTED_ZONE)
+        .replace(/%domain%/g, `${user.replace('@', '')}.${process.env.ALIAS_DOMAIN}`)
 
     /*await EC2.requestSpotFleet({
         SpotFleetRequestConfig: {

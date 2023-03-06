@@ -19,7 +19,7 @@ exports.render = async (user, region) => {
             <br>`
     }
     if (instance && ['pending', 'running'].indexOf(instance.State.Name) > -1) {
-        html += `<h4>IP: ${instance.PublicIpAddress}</h4>
+        html += `<h4>IP: ${instance.PublicIpAddress} - ${user.replace('@', '')}.${process.env.ALIAS_DOMAIN}</h4>
             <br>`
         html += `
 
