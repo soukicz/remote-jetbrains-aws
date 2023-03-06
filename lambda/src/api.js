@@ -233,7 +233,7 @@ exports.startInstance = async function (region, user, ip, instanceType) {
             SecurityGroupIds: [securityGroup],
             SubnetId: subnet,
             ImageId: ami,
-            HibernationOptions: {Configured: true},
+            HibernationOptions: {Configured: false},
             MinCount: 1,
             MaxCount: 1
         }).promise()
