@@ -39,15 +39,19 @@ exports.render = async (user, region) => {
             html += `<a href="#" class="btn btn-success btn-lg px-4 start-instance">Start instance</a>`
         } else {
             html += `<div class="btn-group">
-              <button type="button" class="btn btn-success start-instance" data-type="c5.large" >Start instance</button>
+              <button type="button" class="btn btn-success start-instance" data-type="r6a.large" >Start instance</button>
               <button type="button" class="btn btn-success dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="visually-hidden">Toggle Dropdown</span>
               </button>
               <ul class="dropdown-menu">
-                <li><a class="dropdown-item start-instance" data-type="c5.large" href="#">c5.large</a></li>
-                <li><a class="dropdown-item start-instance" data-type="c5.xlarge" href="#">c5.xlarge</a></li>
-                <li><a class="dropdown-item start-instance" data-type="c5.2xlarge" href="#">c5.2xlarge</a></li>
-                <li><a class="dropdown-item start-instance" data-type="c5.4xlarge" href="#">c5.4xlarge</a></li>
+              <li><a class="dropdown-item start-instance" data-type="c6a.large" href="#">c6a.large</a></li>
+              <li><a class="dropdown-item start-instance" data-type="c6a.xlarge" href="#">c6a.xlarge</a></li>
+              <li><a class="dropdown-item start-instance" data-type="c6a.2xlarge" href="#">c6a.2xlarge</a></li>
+              <li><a class="dropdown-item start-instance" data-type="c6a.4xlarge" href="#">c6a.4xlarge</a></li>
+              <li><a class="dropdown-item start-instance" data-type="r6a.large" href="#">r6a.large</a></li>
+              <li><a class="dropdown-item start-instance" data-type="r6a.xlarge" href="#">r6a.xlarge</a></li>
+              <li><a class="dropdown-item start-instance" data-type="r6a.2xlarge" href="#">r6a.2xlarge</a></li>
+              <li><a class="dropdown-item start-instance" data-type="r6a.4xlarge" href="#">r6a.4xlarge</a></li>
               </ul>
             </div>`
             html += `<br><br> 
