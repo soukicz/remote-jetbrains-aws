@@ -109,7 +109,7 @@ exports.handler = async (request, context, callback) => {
 
     try {
         if (request.rawPath === '/api/start-instance') {
-            return createJsonResponse(await api.startInstance(region, payload.sub, ip, request.queryStringParameters.type), 200)
+            return createJsonResponse(await api.startInstance(region, payload.sub, payload.name, ip, request.queryStringParameters.type), 200)
         }
 
         if (request.rawPath === '/api/hibernate-instance') {

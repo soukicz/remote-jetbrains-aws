@@ -96,7 +96,7 @@ async function findVpc(region) {
     }).promise()).Vpcs[0].VpcId
 }
 
-exports.startInstance = async function (region, user, ip, instanceType) {
+exports.startInstance = async function (region, user, userName, ip, instanceType) {
     const EC2 = new AWS.EC2({apiVersion: '2016-11-15', region: region});
     const SSM = new AWS.SSM({region: 'eu-central-1'})
     const SSMlocal= new AWS.SSM({region: region})
@@ -170,6 +170,8 @@ exports.startInstance = async function (region, user, ip, instanceType) {
         .replace(/%ebs_id%/g, volume.VolumeId)
         .replace(/%region%/g, region)
         .replace(/%key%/g, sshKey)
+        .replace(/%email%/g, user)
+        .replace(/%userName%/g, userName)
         .replace(/%awsId%/g, aliasCredentials.Credentials.AccessKeyId)
         .replace(/%awsKey%/g, aliasCredentials.Credentials.SecretAccessKey)
         .replace(/%awsToken%/g, aliasCredentials.Credentials.SessionToken)

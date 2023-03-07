@@ -35,7 +35,12 @@ echo "%key%" > /home/ec2-user/.ssh/authorized_keys
 chmod 600 /home/ec2-user/.ssh/authorized_keys
 chown -R ec2-user:ec2-user /home/ec2-user/.ssh
 
+[ ! -f /home/ec2-user/.ssh/id_rsa ] && ssh-keygen -t rsa -f /home/ec2-user/.ssh/id_rsa -q -P ""
+
 yum install -y git
+
+git config --global user.name "%userName%"
+git config --global user.email "%email%"
 
 DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
 mkdir -p $DOCKER_CONFIG/cli-plugins

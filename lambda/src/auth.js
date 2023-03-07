@@ -98,10 +98,10 @@ exports.handleRequest = (request, Params) => {
         s.success = (response) => {
             const exp = new Date(response.profile.getAssertion().Assertion.AuthnStatement[0].$.SessionNotOnOrAfter);
             const key = Buffer.from(Params['auth-hash-key'], "base64");
-            console.log(JSON.stringify(response.profile))
             const token = jwt.encode({
                 exp: Math.floor(exp / 1000),
                 sub: response.profile.nameID,
+                name: response.profile.attributes.DisplayName
             }, key);
 
             fulfill(responseCookie(token, exp, host, response.url));
