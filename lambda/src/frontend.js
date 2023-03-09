@@ -14,7 +14,7 @@ function callApi(url) {
                 })
 
                 document.querySelector('.alert-danger').style.display = 'block'
-                document.querySelector('.alert-danger').textContent = JSON.stringify(err)
+                document.querySelector('.alert-danger').textContent = data.error
             }else{
                 window.location.reload()
             }
