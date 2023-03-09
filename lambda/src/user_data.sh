@@ -71,7 +71,7 @@ mkdir -p $DOCKER_CONFIG/cli-plugins
 curl -SL https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-linux-x86_64 -o $DOCKER_CONFIG/cli-plugins/docker-compose
 chmod +x $DOCKER_CONFIG/cli-plugins/docker-compose
 
-echo <<EOF
+cat << EOF > /usr/bin/inactive-poweroff
 #!/bin/bash
 
 touch /tmp/.active-ssh
@@ -81,14 +81,12 @@ do
   if netstat -tna | grep ':22.*ESTABLISHED' > /dev/null; then
     touch /tmp/.active-ssh
   fi
-  if [ -e /tmp/.active-ssh ]; then
-    if [[ $(stat -c %Y /tmp/.active-ssh) -lt $(( $(date +%s) - 1200 )) ]]; then
-      poweroff
-    fi
+  if [[ $(stat -c %Y /tmp/.active-ssh) -lt $(( $(date +%s) - 1200 )) ]]; then
+    poweroff
   fi
   sleep 60
 done
-EOF > /usr/bin/inactive-poweroff
+EOF
 
 chmod +x /usr/bin/inactive-poweroff
 /usr/bin/inactive-poweroff &
