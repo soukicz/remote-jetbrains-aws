@@ -8,9 +8,16 @@ function callApi(url) {
         .then((response) => response.json())
         .then((data) => {
             if (data.error) {
-                throw new Error(data.error)
+                document.querySelector('.loading').style.display = 'none'
+                document.querySelectorAll('.btn, .btn-group, .dropdown').forEach(btn => {
+                    btn.style.display = 'none'
+                })
+
+                document.querySelector('.alert-danger').style.display = 'block'
+                document.querySelector('.alert-danger').textContent = JSON.stringify(err)
+            }else{
+                window.location.reload()
             }
-            window.location.reload()
         })
         .catch(err => {
             document.querySelector('.loading').style.display = 'none'
