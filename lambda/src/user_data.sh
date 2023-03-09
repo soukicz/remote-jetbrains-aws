@@ -35,7 +35,7 @@ else
   aws ec2 attach-volume --volume-id "%ebs_id%" --device /dev/xvde  --instance-id "$INSTANCE_ID" --region "%region%"
   while [ ! -e /dev/xvde ] ; do sleep 1 ; done
 
-  DEVICE=${realpath /dev/xvde}
+  DEVICE=$(realpath /dev/xvde)
 
   if [ "$(file -b -s $DEVICE)" == "data" ]; then
        mkfs -t ext4 /dev/xvde
@@ -81,7 +81,8 @@ do
   if netstat -tna | grep ':22.*ESTABLISHED' > /dev/null; then
     touch /tmp/.active-ssh
   fi
-  if [[ $(stat -c %Y /tmp/.active-ssh) -lt $(( $(date +%s) - 1200 )) ]]; then
+  time=$(stat -c %Y /tmp/.active-ssh)
+  if [[ "$time" -lt $(( $(date +%s) - 1200 )) ]]; then
     poweroff
   fi
   sleep 60
