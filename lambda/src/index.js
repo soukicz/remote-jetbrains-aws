@@ -127,7 +127,10 @@ exports.handler = async (request, context, callback) => {
         if (err.errorMessage) {
             return createJsonResponse({error: err.errorMessage}, 500);
         }
-        if (err.error.message) {
+        if (err.message) {
+            return createJsonResponse({error: err.message}, 500);
+        }
+        if (err.error && err.error.message) {
             return createJsonResponse({error: err.error.message}, 500);
         }
 
