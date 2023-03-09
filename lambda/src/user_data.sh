@@ -81,7 +81,7 @@ cat << EOF > /usr/bin/inactive-poweroff
   fi
   time=\$(stat -c %Y /tmp/.active-ssh)
   if [[ "\$time" -lt \$(( \$(date +%s) - 1200 )) ]]; then
-    poweroff
+    /sbin/poweroff
   fi
 
 EOF
