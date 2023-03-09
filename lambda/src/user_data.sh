@@ -29,7 +29,9 @@ PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
 AWS_ACCESS_KEY_ID="%awsId%" AWS_SECRET_ACCESS_KEY="%awsKey%" AWS_SESSION_TOKEN="%awsToken%" aws route53 change-resource-record-sets --hosted-zone-id "%hostedZone%" --change-batch '{"Changes":[{"Action":"UPSERT","ResourceRecordSet":{"Name":"%domain%","Type":"A","TTL":15,"ResourceRecords":[{"Value":"'"$PUBLIC_IP"'"}]}}]}'
 
 ## EBS
-if [ ! -e /dev/xvde ]; then
+if mount | grep /home/ec2-user > /dev/null; then
+  echo "already mounted"
+else
   aws ec2 attach-volume --volume-id "%ebs_id%" --device /dev/xvde  --instance-id "$INSTANCE_ID" --region "%region%"
   while [ ! -e /dev/xvde ] ; do sleep 1 ; done
 
