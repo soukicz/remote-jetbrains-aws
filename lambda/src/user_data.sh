@@ -74,13 +74,13 @@ chmod +x $DOCKER_CONFIG/cli-plugins/docker-compose
 cat << EOF > /usr/bin/inactive-poweroff
 #!/bin/bash
 
-[ -F touch /tmp/.active-ssh ] && touch /tmp/.active-ssh
+[ ! -f touch /tmp/.active-ssh ] && touch /tmp/.active-ssh
 
   if netstat -tna | grep ':22.*ESTABLISHED' > /dev/null; then
     touch /tmp/.active-ssh
   fi
-  time=$(stat -c %Y /tmp/.active-ssh)
-  if [[ "$time" -lt $(( $(date +%s) - 1200 )) ]]; then
+  time=\$(stat -c %Y /tmp/.active-ssh)
+  if [[ "\$time" -lt \$(( \$(date +%s) - 1200 )) ]]; then
     poweroff
   fi
 
