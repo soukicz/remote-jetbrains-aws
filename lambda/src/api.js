@@ -98,8 +98,7 @@ async function findVpc(region) {
 
 exports.startInstance = async function (region, user, userName, ip, instanceType) {
     const EC2 = new AWS.EC2({apiVersion: '2016-11-15', region: region});
-    const SSM = new AWS.SSM({region: 'eu-central-1'})
-    const SSMlocal= new AWS.SSM({region: region})
+    const SSM= new AWS.SSM({region: region})
 
     const filterTags = [
         {Name: 'tag:Name', Values: ['jetbrains']},
@@ -110,17 +109,10 @@ exports.startInstance = async function (region, user, userName, ip, instanceType
         {Key: 'Owner', Value: user},
     ]
 
-    const ami = JSON.parse((await SSMlocal.getParameter({
+    const ami = JSON.parse((await SSM.getParameter({
         Name: '/aws/service/ecs/optimized-ami/amazon-linux-2/recommended',
         WithDecryption: true
     }).promise()).Parameter.Value).image_id
-
-    const sshKey = (await SSM.getParameter({
-        Name: '/ec2/key/' + user.replace('@', '-'),
-        WithDecryption: true
-    }).promise()).Parameter.Value
-
-    let volume = await findVolume(region, user);
 
     const securityGroups = (await EC2.describeSecurityGroups({
         Filters: filterTags
@@ -166,18 +158,6 @@ exports.startInstance = async function (region, user, userName, ip, instanceType
         DurationSeconds: 15 * 60
     }).promise()
 
-    const userData = fs.readFileSync(`${__dirname}/user_data.sh`, 'utf8')
-        .replace(/%ebs_id%/g, volume.VolumeId)
-        .replace(/%region%/g, region)
-        .replace(/%key%/g, sshKey)
-        .replace(/%email%/g, user)
-        .replace(/%userName%/g, userName)
-        .replace(/%awsId%/g, aliasCredentials.Credentials.AccessKeyId)
-        .replace(/%awsKey%/g, aliasCredentials.Credentials.SecretAccessKey)
-        .replace(/%awsToken%/g, aliasCredentials.Credentials.SessionToken)
-        .replace(/%hostedZone%/g, process.env.ALIAS_HOSTED_ZONE)
-        .replace(/%domain%/g, `${user.replace(/[@.]/g, '-')}.${process.env.ALIAS_DOMAIN}`)
-
     /*await EC2.requestSpotFleet({
         SpotFleetRequestConfig: {
             IamFleetRole: "arn:aws:iam::146678277531:role/aws-ec2-spot-fleet-tagging-role",
@@ -204,6 +184,10 @@ exports.startInstance = async function (region, user, userName, ip, instanceType
 
     if (existingInstance) {
         if (['stopped', 'stopping'].indexOf(existingInstance.State.Name) > -1) {
+            await EC2.modifyInstanceAttribute({
+                InstanceId: existingInstance.InstanceId,
+                UserData: await createUserData(region, user, userName, aliasCredentials),
+            }).promise()
             await EC2.startInstances({
                 InstanceIds: [existingInstance.InstanceId]
             }).promise()
@@ -220,7 +204,7 @@ exports.startInstance = async function (region, user, userName, ip, instanceType
         }).promise()).Subnets[0].SubnetId
 
         const instance = await EC2.runInstances({
-            UserData: Buffer.from(userData, 'utf8').toString('base64'),
+            UserData: await createUserData(region, user, userName, aliasCredentials),
             InstanceType: instanceType,
             EbsOptimized: true,
             IamInstanceProfile: {Name: 'ec2_instance_role_jetbrains'},
@@ -291,4 +275,29 @@ exports.migrate = async function (user, fromRegion, targetRegion) {
     return {
         status: true
     }
+}
+
+async function createUserData(region, user, userName, aliasCredentials) {
+    const SSM = new AWS.SSM({region: 'eu-central-1'})
+
+    const sshKey = (await SSM.getParameter({
+        Name: '/ec2/key/' + user.replace('@', '-'),
+        WithDecryption: true
+    }).promise()).Parameter.Value
+
+    let volume = await findVolume(region, user);
+
+    const userData = fs.readFileSync(`${__dirname}/user_data.sh`, 'utf8')
+        .replace(/%ebs_id%/g, volume.VolumeId)
+        .replace(/%region%/g, region)
+        .replace(/%key%/g, sshKey)
+        .replace(/%email%/g, user)
+        .replace(/%userName%/g, userName)
+        .replace(/%awsId%/g, aliasCredentials.Credentials.AccessKeyId)
+        .replace(/%awsKey%/g, aliasCredentials.Credentials.SecretAccessKey)
+        .replace(/%awsToken%/g, aliasCredentials.Credentials.SessionToken)
+        .replace(/%hostedZone%/g, process.env.ALIAS_HOSTED_ZONE)
+        .replace(/%domain%/g, `${user.replace(/[@.]/g, '-')}.${process.env.ALIAS_DOMAIN}`)
+
+    return Buffer.from(userData, 'utf8').toString('base64')
 }
