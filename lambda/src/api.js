@@ -186,7 +186,9 @@ exports.startInstance = async function (region, user, userName, ip, instanceType
         if (['stopped', 'stopping'].indexOf(existingInstance.State.Name) > -1) {
             await EC2.modifyInstanceAttribute({
                 InstanceId: existingInstance.InstanceId,
-                UserData: await createUserData(region, user, userName, aliasCredentials),
+                UserData: {
+                    Value: await createUserData(region, user, userName, aliasCredentials)
+                },
             }).promise()
             await EC2.startInstances({
                 InstanceIds: [existingInstance.InstanceId]
