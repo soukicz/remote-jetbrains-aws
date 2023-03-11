@@ -1,5 +1,5 @@
 "use strict";
-import {hibernateInstance, migrate, startInstance, terminateInstance} from "./api.mjs";
+import {attachEbs, hibernateInstance, migrate, startInstance, terminateInstance} from "./api.mjs";
 import home from "./home.mjs";
 import { readFileSync } from 'fs'
 import {getPayload, handleRequest, responseCookie} from "./auth.mjs";
@@ -68,12 +68,20 @@ export async function handler(request, context, callback) {
     const host = request.headers.host;
 
     // explicitly call middleware
-    if (request.rawPath === '/auth')
+    if (request.rawPath === '/auth') {
         return await handleRequest(request, Params);
+    }
 
     // explicitly expire token
-    if (request.rawPath === '/auth/expire')
+    if (request.rawPath === '/auth/expire') {
         return responseCookie("", new Date(0), `https://${host}/auth`);
+    }
+
+    // EC2 api
+    if (request.rawPath === '/attach-ebs') {
+        await attachEbs(request.queryStringParameters.user)
+        return createJsonResponse(true, 200)
+    }
 
     // if token is valid make original request
     // if invalid call middleware

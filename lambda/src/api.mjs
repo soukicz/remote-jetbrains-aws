@@ -19,7 +19,7 @@ import {
     DescribeSubnetsCommand,
     RunInstancesCommand,
     CreateSnapshotCommand,
-    waitUntilSnapshotCompleted, CopySnapshotCommand, DeleteVolumeCommand
+    waitUntilSnapshotCompleted, CopySnapshotCommand, DeleteVolumeCommand, AttachVolumeCommand
 } from "@aws-sdk/client-ec2";
 import {AssumeRoleCommand, STSClient} from "@aws-sdk/client-sts";
 import {GetParameterCommand, PutParameterCommand, SSMClient} from "@aws-sdk/client-ssm";
@@ -29,6 +29,23 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+export async function attachEbs(user) {
+    const region = (await (new SSMClient({region: 'eu-central-1'}))
+        .send(new GetParameterCommand({
+            Name: '/ec2/region/' + user.replace('@', '-'),
+            WithDecryption: true
+        }))).Parameter.Value
+
+    const instance = await findInstance(region, user)
+    const volume = await findVolume(region, user)
+    const EC2 = new EC2Client({apiVersion: '2016-11-15', region: region});
+    await EC2.send(new AttachVolumeCommand({
+        InstanceId: instance.InstanceId,
+        VolumeId: volume.VolumeId,
+        Device: '/dev/xvde'
+    }))
+}
 
 export async function findInstance(region, user) {
     const EC2 = new EC2Client({apiVersion: '2016-11-15', region: region});
@@ -313,10 +330,8 @@ async function createUserData(region, user, userName, aliasCredentials) {
         WithDecryption: true
     }))).Parameter.Value
 
-    let volume = await findVolume(region, user);
-
     const userData = readFileSync(`${__dirname}/user_data.sh`, 'utf8')
-        .replace(/%ebs_id%/g, volume.VolumeId)
+        .replace(/%attachUrl%/g, `${process.env.SELF_URL}attach-ebs?user=${encodeURIComponent(user)}`)
         .replace(/%region%/g, region)
         .replace(/%key%/g, sshKey)
         .replace(/%email%/g, user)

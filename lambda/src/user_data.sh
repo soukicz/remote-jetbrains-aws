@@ -32,6 +32,7 @@ AWS_ACCESS_KEY_ID="%awsId%" AWS_SECRET_ACCESS_KEY="%awsKey%" AWS_SESSION_TOKEN="
 if mount | grep /home/ec2-user > /dev/null; then
   echo "already mounted"
 else
+  curl "%attachUrl%"
   aws ec2 attach-volume --volume-id "%ebs_id%" --device /dev/xvde  --instance-id "$INSTANCE_ID" --region "%region%"
   while [ ! -e /dev/xvde ] ; do sleep 1 ; done
 
