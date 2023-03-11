@@ -24,6 +24,12 @@ import {
 import {AssumeRoleCommand, STSClient} from "@aws-sdk/client-sts";
 import {GetParameterCommand, PutParameterCommand, SSMClient} from "@aws-sdk/client-ssm";
 
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 export async function findInstance(region, user) {
     const EC2 = new EC2Client({apiVersion: '2016-11-15', region: region});
 
