@@ -1,17 +1,39 @@
 const fs = require('fs')
-const AWS = require('aws-sdk')
+import {
+    EC2Client,
+    DescribeInstancesCommand,
+    TerminateInstancesCommand,
+    StopInstancesCommand,
+    waitUntilInstanceExists,
+    DescribeVolumesCommand,
+    CreateVolumeCommand,
+    CreateTagsCommand,
+    waitUntilVolumeAvailable,
+    DescribeVpcsCommand,
+    DescribeSecurityGroupsCommand,
+    CreateSecurityGroupCommand,
+    AuthorizeSecurityGroupIngressCommand,
+    ModifyInstanceAttributeCommand,
+    StartInstancesCommand,
+    waitUntilInstanceRunning,
+    DescribeSubnetsCommand,
+    RunInstancesCommand,
+    CreateSnapshotCommand,
+    waitUntilSnapshotCompleted, CopySnapshotCommand, DeleteVolumeCommand
+} from "@aws-sdk/client-ec2";
+import {AssumeRoleCommand, STSClient} from "@aws-sdk/client-sts";
+import {GetParameterCommand, PutParameterCommand, SSMClient} from "@aws-sdk/client-ssm";
 
 async function findInstance(region, user) {
-    const EC2 = new AWS.EC2({apiVersion: '2016-11-15', region: region});
+    const EC2 = new EC2Client({apiVersion: '2016-11-15', region: region});
 
-    const list = await EC2.describeInstances({
+    const list = await EC2.send(new DescribeInstancesCommand({
         Filters: [
             {Name: 'tag:Name', Values: ['jetbrains']},
             {Name: 'tag:Owner', Values: [user]},
             {Name: 'instance-state-name', Values: ['pending', 'running', 'stopping', 'stopped', 'shutting-down']}
         ]
-
-    }).promise()
+    }))
 
     console.log(JSON.stringify(list))
     if (list.Reservations.length === 0) {
@@ -31,10 +53,10 @@ exports.terminateInstance = async function (region, user) {
     if (!instance) {
         return {status: true}
     }
-    const EC2 = new AWS.EC2({apiVersion: '2016-11-15', region: region});
-    await EC2.terminateInstances({
+    const EC2 = new EC2Client({apiVersion: '2016-11-15', region: region});
+    await EC2.send(new TerminateInstancesCommand({
         InstanceIds: [instance.InstanceId]
-    }).promise()
+    }))
 
     return {status: true}
 }
@@ -45,18 +67,18 @@ exports.hibernateInstance = async function (region, user) {
     if (!instance) {
         return {status: true}
     }
-    const EC2 = new AWS.EC2({apiVersion: '2016-11-15', region: region});
-    await EC2.stopInstances({
+    const EC2 = new EC2Client({apiVersion: '2016-11-15', region: region});
+    await EC2.send(new StopInstancesCommand({
         InstanceIds: [instance.InstanceId],
         Hibernate: true
-    }).promise()
-    await EC2.waitFor('instanceStopped', {InstanceIds: [instance]}).promise()
+    }))
+    await waitUntilInstanceExists({client: EC2, maxWaitTime: 120}, {InstanceIds: [instance.InstanceId]})
 
     return {status: true}
 }
 
 async function findVolume(region, user, snapshot) {
-    const EC2 = new AWS.EC2({apiVersion: '2016-11-15', region: region});
+    const EC2 = new EC2Client({apiVersion: '2016-11-15', region: region});
     const filterTags = [
         {Name: 'tag:Name', Values: ['jetbrains']},
         {Name: 'tag:Owner', Values: [user]}
@@ -65,40 +87,40 @@ async function findVolume(region, user, snapshot) {
         {Key: 'Name', Value: 'jetbrains'},
         {Key: 'Owner', Value: user},
     ]
-    const volumes = (await EC2.describeVolumes({
+    const volumes = (await EC2.send(new DescribeVolumesCommand({
         Filters: filterTags
-    }).promise()).Volumes
+    }))).Volumes
     if (volumes.length === 0) {
-        const volume = (await EC2.createVolume({
+        const volume = await EC2.send(new CreateVolumeCommand({
             VolumeType: 'gp3',
             Size: 30,
             AvailabilityZone: `${region}a`,
             SnapshotId: snapshot ? snapshot : null
-        }).promise())
+        }))
 
-        await EC2.createTags({
+        await EC2.send(new CreateTagsCommand({
             Resources: [volume.VolumeId],
             Tags: tags
-        }).promise()
+        }))
 
-        await EC2.waitFor('volumeAvailable', {VolumeIds: [volume.VolumeId]}).promise()
+        await waitUntilVolumeAvailable({client: EC2, maxWaitTime: 120}, {VolumeIds: [volume.VolumeId]})
         return volume
     }
     return volumes[0]
 }
 
 async function findVpc(region) {
-    const EC2 = new AWS.EC2({apiVersion: '2016-11-15', region: region});
-    return (await EC2.describeVpcs({
+    const EC2 = new EC2Client({apiVersion: '2016-11-15', region: region});
+    return (await EC2.send(new DescribeVpcsCommand({
         Filters: [
             {Name: 'is-default', Values: ['true']}
         ]
-    }).promise()).Vpcs[0].VpcId
+    }))).Vpcs[0].VpcId
 }
 
 exports.startInstance = async function (region, user, userName, ip, instanceType) {
-    const EC2 = new AWS.EC2({apiVersion: '2016-11-15', region: region});
-    const SSM= new AWS.SSM({region: region})
+    const EC2 = new EC2Client({apiVersion: '2016-11-15', region: region});
+    const SSM = new SSMClient({region: region})
 
     const filterTags = [
         {Name: 'tag:Name', Values: ['jetbrains']},
@@ -109,29 +131,29 @@ exports.startInstance = async function (region, user, userName, ip, instanceType
         {Key: 'Owner', Value: user},
     ]
 
-    const ami = JSON.parse((await SSM.getParameter({
+    const ami = JSON.parse((await SSM.send(new GetParameterCommand({
         Name: '/aws/service/ecs/optimized-ami/amazon-linux-2/recommended',
         WithDecryption: true
-    }).promise()).Parameter.Value).image_id
+    }))).Parameter.Value).image_id
 
-    const securityGroups = (await EC2.describeSecurityGroups({
+    const securityGroups = (await EC2.send(new DescribeSecurityGroupsCommand({
         Filters: filterTags
-    }).promise()).SecurityGroups
+    }))).SecurityGroups
 
     let securityGroup
     if (securityGroups.length === 0) {
         const vpc = await findVpc(region)
 
-        securityGroup = (await EC2.createSecurityGroup({
+        securityGroup = (await EC2.send(new CreateSecurityGroupCommand({
             GroupName: 'jetbrains-' + user.replace(/[^a-z\d]/g, ''),
             Description: 'jetbrains ' + user,
             VpcId: vpc
-        }).promise()).GroupId
+        }))).GroupId
 
-        await EC2.createTags({
+        await EC2.send(new CreateTagsCommand({
             Resources: [securityGroup],
             Tags: tags
-        }).promise()
+        }))
 
     } else {
         securityGroup = securityGroups[0].GroupId
@@ -139,24 +161,24 @@ exports.startInstance = async function (region, user, userName, ip, instanceType
 
     for (const port of [22]) {
         try {
-            await EC2.authorizeSecurityGroupIngress({
+            await EC2.send(new AuthorizeSecurityGroupIngressCommand({
                 GroupId: securityGroup,
                 FromPort: port,
                 ToPort: port,
                 CidrIp: `${ip}/24`,
                 IpProtocol: 'tcp'
-            }).promise()
+            }))
         } catch (e) {
             console.log(e)
         }
     }
 
-    const sts = new AWS.STS({apiVersion: '2011-06-15'});
-    const aliasCredentials = await sts.assumeRole({
+    const sts = new STSClient({apiVersion: '2011-06-15'});
+    const aliasCredentials = await sts.send(new AssumeRoleCommand({
         RoleArn: process.env.ALIAS_ROLE_ARN,
         RoleSessionName: user.replace('@', ''),
         DurationSeconds: 15 * 60
-    }).promise()
+    }))
 
     /*await EC2.requestSpotFleet({
         SpotFleetRequestConfig: {
@@ -184,28 +206,28 @@ exports.startInstance = async function (region, user, userName, ip, instanceType
 
     if (existingInstance) {
         if (['stopped', 'stopping'].indexOf(existingInstance.State.Name) > -1) {
-            await EC2.modifyInstanceAttribute({
+            await EC2.send(new ModifyInstanceAttributeCommand({
                 InstanceId: existingInstance.InstanceId,
                 UserData: {
                     Value: await createUserData(region, user, userName, aliasCredentials)
                 },
-            }).promise()
-            await EC2.startInstances({
+            }))
+            await EC2.send(new StartInstancesCommand({
                 InstanceIds: [existingInstance.InstanceId]
-            }).promise()
-            await EC2.waitFor('instanceRunning', {
+            }))
+            await waitUntilInstanceRunning({client: EC2, maxWaitTime: 120 }, {
                 InstanceIds: [existingInstance.InstanceId]
-            }).promise()
+            })
         }
     } else if (!(await findInstance(region, user))) {
-        const subnet = (await EC2.describeSubnets({
+        const subnet = (await EC2.send(new DescribeSubnetsCommand({
             Filters: [
                 {Name: 'availability-zone', Values: [`${region}a`]},
                 {Name: 'vpc-id', Values: [await findVpc(region)]}
             ]
-        }).promise()).Subnets[0].SubnetId
+        }))).Subnets[0].SubnetId
 
-        const instance = await EC2.runInstances({
+        const instance = await EC2.send(new RunInstancesCommand({
             UserData: await createUserData(region, user, userName, aliasCredentials),
             InstanceType: instanceType,
             EbsOptimized: true,
@@ -224,14 +246,14 @@ exports.startInstance = async function (region, user, userName, ip, instanceType
             HibernationOptions: {Configured: false},
             MinCount: 1,
             MaxCount: 1
-        }).promise()
+        }))
 
-        await EC2.createTags({
+        await EC2.send(new CreateTagsCommand({
             Resources: [instance.Instances[0].InstanceId],
             Tags: tags
-        }).promise()
+        }))
 
-        await EC2.waitFor('instanceExists', {InstanceIds: [instance.Instances[0].InstanceId]}).promise()
+        await waitUntilInstanceExists({client: EC2, maxWaitTime: 120}, {InstanceIds: [instance.Instances[0].InstanceId]})
     }
 
     return {
@@ -240,39 +262,39 @@ exports.startInstance = async function (region, user, userName, ip, instanceType
 }
 
 exports.migrate = async function (user, fromRegion, targetRegion) {
-    const EC2from = new AWS.EC2({apiVersion: '2016-11-15', region: fromRegion});
-    const EC2target = new AWS.EC2({apiVersion: '2016-11-15', region: targetRegion});
+    const EC2from = new EC2Client({apiVersion: '2016-11-15', region: fromRegion});
+    const EC2target = new EC2Client({apiVersion: '2016-11-15', region: targetRegion});
 
     const fromVolume = await findVolume(fromRegion, user)
 
-    const snapshot = await EC2from.createSnapshot({
+    const snapshot = await EC2from.send(new CreateSnapshotCommand({
         Description: 'migrate-to-' + targetRegion,
         VolumeId: fromVolume.VolumeId,
-    }).promise()
+    }))
 
-    await EC2from.waitFor('snapshotCompleted', {SnapshotIds: [snapshot.SnapshotId]}).promise()
+    await waitUntilSnapshotCompleted({client: EC2from, maxWaitTime: 600}, {SnapshotIds: [snapshot.SnapshotId]})
 
-    const newSnapshot = await EC2target.copySnapshot({
+    const newSnapshot = await EC2target.send(new CopySnapshotCommand({
         SourceRegion: fromRegion,
         DestinationRegion: targetRegion,
         SourceSnapshotId: snapshot.SnapshotId,
         Description: 'migrate-from-' + fromRegion
-    }).promise()
+    }))
 
-    await EC2target.waitFor('snapshotCompleted', {SnapshotIds: [newSnapshot.SnapshotId]}).promise()
+    await waitUntilSnapshotCompleted({client: EC2target, maxWaitTime: 600}, {SnapshotIds: [newSnapshot.SnapshotId]})
 
     await findVolume(targetRegion, user, newSnapshot.SnapshotId)
 
-    await (new AWS.SSM({region: 'eu-central-1'}))
-        .putParameter({
+    await (new SSMClient({region: 'eu-central-1'}))
+        .send(new PutParameterCommand({
             Name: '/ec2/region/' + user.replace('@', '-'),
             Value: targetRegion,
             Overwrite: true
-        }).promise()
+        }))
 
-    await EC2from.deleteVolume({
+    await EC2from.send(new DeleteVolumeCommand({
         VolumeId: fromVolume.VolumeId
-    }).promise()
+    }))
 
     return {
         status: true
@@ -280,12 +302,12 @@ exports.migrate = async function (user, fromRegion, targetRegion) {
 }
 
 async function createUserData(region, user, userName, aliasCredentials) {
-    const SSM = new AWS.SSM({region: 'eu-central-1'})
+    const SSM = new SSMClient({region: 'eu-central-1'})
 
-    const sshKey = (await SSM.getParameter({
+    const sshKey = (await SSM.send(new GetParameterCommand({
         Name: '/ec2/key/' + user.replace('@', '-'),
         WithDecryption: true
-    }).promise()).Parameter.Value
+    }))).Parameter.Value
 
     let volume = await findVolume(region, user);
 

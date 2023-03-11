@@ -1,6 +1,6 @@
-const AWS = require('aws-sdk')
 const render = require('./render').render
 const api = require('./api')
+const {EC2Client, DescribeRegionsCommand} = require("@aws-sdk/client-ec2");
 
 exports.render = async (user, region) => {
 
@@ -19,7 +19,8 @@ exports.render = async (user, region) => {
             <br>`
     }
     if (instance && ['pending', 'running'].indexOf(instance.State.Name) > -1) {
-        html += `<h4>IP: ${instance.PublicIpAddress} - ${user.replace(/[@.]/g, '-')}.${process.env.ALIAS_DOMAIN}</h4>
+        html += `<h4>${user.replace(/[@.]/g, '-')}.${process.env.ALIAS_DOMAIN}</h4>
+            IP: ${instance.PublicIpAddress}
             <br>`
         html += `
 
@@ -69,12 +70,12 @@ exports.render = async (user, region) => {
                   </button>
                   <ul class="dropdown-menu">`
 
-            const EC2 = new AWS.EC2({apiVersion: '2016-11-15', region: 'eu-central-1'});
-            const regions = (await EC2.describeRegions({
+            const EC2 = new EC2Client({apiVersion: '2016-11-15', region: 'eu-central-1'});
+            const regions = (await EC2.send(new DescribeRegionsCommand({
                 Filters: [
                     {Name: 'opt-in-status', Values: ['opt-in-not-required', 'opted-in']}
                 ]
-            }).promise()).Regions
+            }))).Regions
                 .filter(otherRegion => {
                     return otherRegion.RegionName !== region
                 }).map(otherRegion => {

@@ -1,9 +1,9 @@
 "use strict";
 const fs = require('fs')
-const AWS = require('aws-sdk')
 const auth = require('./auth')
 const home = require('./home')
 const api = require('./api')
+const {SSMClient, GetParametersByPathCommand, GetParameterCommand} = require("@aws-sdk/client-ssm");
 
 // global const reused across invocations
 const Params = {
@@ -17,11 +17,11 @@ const paramsGet = async () => {
     // immediate return cached params if defined
     if (Params['auth-domain-name'] !== undefined) return;
     const path = '/sso/';
-    const data = await (new AWS.SSM({region: 'eu-central-1'}))
-        .getParametersByPath({
+    const data = await (new SSMClient({region: 'eu-central-1'}))
+        .send(new GetParametersByPathCommand({
             Path: path,
             WithDecryption: true
-        }).promise()
+        }))
 
     data.Parameters.forEach((p) => {
         Params[p.Name.slice(path.length)] = p.Value;
@@ -80,11 +80,11 @@ exports.handler = async (request, context, callback) => {
     }
     console.log(JSON.stringify(payload))
 
-    const region = (await (new AWS.SSM({region: 'eu-central-1'}))
-        .getParameter({
+    const region = (await (new SSMClient({region: 'eu-central-1'}))
+        .send(new GetParameterCommand({
             Name: '/ec2/region/' + payload.sub.replace('@', '-'),
             WithDecryption: true
-        }).promise()).Parameter.Value
+        }))).Parameter.Value
 
     if (request.rawPath === '/') {
         return {
