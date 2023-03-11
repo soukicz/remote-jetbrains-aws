@@ -1,6 +1,6 @@
 const fs = require('fs')
 
-exports.render = (html, user) => {
+export default (html, user) => {
     return `<!doctype html>
 <html lang="en">
   <head>

@@ -1,8 +1,9 @@
-const render = require('./render').render
-const api = require('./api')
+import render from "./render.mjs";
+
+const api = require('./api.mjs')
 const {EC2Client, DescribeRegionsCommand} = require("@aws-sdk/client-ec2");
 
-exports.render = async (user, region) => {
+export default async function (user, region) {
 
     let html = `
 <div class="alert alert-danger" style="display: none"></div>

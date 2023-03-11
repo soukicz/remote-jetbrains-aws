@@ -5,7 +5,7 @@ jobs:
     name: build and deploy lambda
     strategy:
       matrix:
-        node-version: [16.x]
+        node-version: [18.x]
     runs-on: ubuntu-latest
     defaults:
       run:

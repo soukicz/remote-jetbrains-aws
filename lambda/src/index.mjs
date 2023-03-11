@@ -1,8 +1,10 @@
 "use strict";
+import {hibernateInstance, migrate, startInstance, terminateInstance} from "./api.mjs";
+import home from "./home.mjs";
+
 const fs = require('fs')
 const auth = require('./auth')
-const home = require('./home')
-const api = require('./api')
+
 const {SSMClient, GetParametersByPathCommand, GetParameterCommand} = require("@aws-sdk/client-ssm");
 
 // global const reused across invocations
@@ -49,7 +51,7 @@ function createJsonResponse(body, status) {
  * @param context
  * @param callback
  */
-exports.handler = async (request, context, callback) => {
+export async function handler(request, context, callback) {
     console.log(JSON.stringify(request))
 
     if (request.body && request.isBase64Encoded) {
@@ -92,7 +94,7 @@ exports.handler = async (request, context, callback) => {
             headers: {
                 "Content-Type": "text/html; charset=UTF-8",
             },
-            body: await home.render(payload.sub, region),
+            body: await home(payload.sub, region),
             isBase64Encoded: false
         }
     }
@@ -109,18 +111,18 @@ exports.handler = async (request, context, callback) => {
 
     try {
         if (request.rawPath === '/api/start-instance') {
-            return createJsonResponse(await api.startInstance(region, payload.sub, payload.name, ip, request.queryStringParameters.type), 200)
+            return createJsonResponse(await startInstance(region, payload.sub, payload.name, ip, request.queryStringParameters.type), 200)
         }
 
         if (request.rawPath === '/api/hibernate-instance') {
-            return createJsonResponse(await api.hibernateInstance(region, payload.sub), 200)
+            return createJsonResponse(await hibernateInstance(region, payload.sub), 200)
         }
 
         if (request.rawPath === '/api/terminate-instance') {
-            return createJsonResponse(await api.terminateInstance(region, payload.sub), 200)
+            return createJsonResponse(await terminateInstance(region, payload.sub), 200)
         }
         if (request.rawPath === '/api/migrate-instance') {
-            return createJsonResponse(await api.migrate(payload.sub, region, request.queryStringParameters.target), 200)
+            return createJsonResponse(await migrate(payload.sub, region, request.queryStringParameters.target), 200)
         }
     } catch (err) {
         console.error(JSON.stringify(err))

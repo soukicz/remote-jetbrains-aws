@@ -24,7 +24,7 @@ import {
 import {AssumeRoleCommand, STSClient} from "@aws-sdk/client-sts";
 import {GetParameterCommand, PutParameterCommand, SSMClient} from "@aws-sdk/client-ssm";
 
-async function findInstance(region, user) {
+export async function findInstance(region, user) {
     const EC2 = new EC2Client({apiVersion: '2016-11-15', region: region});
 
     const list = await EC2.send(new DescribeInstancesCommand({
@@ -46,9 +46,7 @@ async function findInstance(region, user) {
     return list.Reservations[0].Instances[0]
 }
 
-exports.findInstance = findInstance
-
-exports.terminateInstance = async function (region, user) {
+export async function terminateInstance(region, user) {
     const instance = await findInstance(region, user)
     if (!instance) {
         return {status: true}
@@ -61,7 +59,7 @@ exports.terminateInstance = async function (region, user) {
     return {status: true}
 }
 
-exports.hibernateInstance = async function (region, user) {
+export async function hibernateInstance(region, user) {
     const instance = await findInstance(region, user)
     console.log(JSON.stringify(instance))
     if (!instance) {
@@ -118,7 +116,7 @@ async function findVpc(region) {
     }))).Vpcs[0].VpcId
 }
 
-exports.startInstance = async function (region, user, userName, ip, instanceType) {
+export async function startInstance(region, user, userName, ip, instanceType) {
     const EC2 = new EC2Client({apiVersion: '2016-11-15', region: region});
     const SSM = new SSMClient({region: region})
 
@@ -261,7 +259,7 @@ exports.startInstance = async function (region, user, userName, ip, instanceType
     }
 }
 
-exports.migrate = async function (user, fromRegion, targetRegion) {
+export async function migrate(user, fromRegion, targetRegion) {
     const EC2from = new EC2Client({apiVersion: '2016-11-15', region: fromRegion});
     const EC2target = new EC2Client({apiVersion: '2016-11-15', region: targetRegion});
 
