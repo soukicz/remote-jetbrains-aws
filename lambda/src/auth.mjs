@@ -1,6 +1,6 @@
 "use strict";
 import {Strategy as AwsStrategy} from "passport-saml";
-import {decode, encode} from 'jwt-simple'
+import jwt from 'jwt-simple'
 import {parse as parseQueryString} from 'querystring'
 
 const responseError = (err) => {
@@ -98,7 +98,7 @@ export function handleRequest(request, Params) {
         s.success = (response) => {
             const exp = new Date(response.profile.getAssertion().Assertion.AuthnStatement[0].$.SessionNotOnOrAfter);
             const key = Buffer.from(Params['auth-hash-key'], "base64");
-            const token = encode({
+            const token = jwt.encode({
                 exp: Math.floor(exp / 1000),
                 sub: response.profile.nameID,
                 name: response.profile.attributes.DisplayName
@@ -113,5 +113,5 @@ export function handleRequest(request, Params) {
 
 
 export function getPayload(request, Params) {
-    return decode(requestCookie(request, "access_token"), Buffer.from(Params['auth-hash-key'], "base64"));
+    return jwt.decode(requestCookie(request, "access_token"), Buffer.from(Params['auth-hash-key'], "base64"));
 }
