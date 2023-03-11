@@ -1,4 +1,4 @@
-const fs = require('fs')
+import { readFileSync } from 'fs'
 import {
     EC2Client,
     DescribeInstancesCommand,
@@ -309,7 +309,7 @@ async function createUserData(region, user, userName, aliasCredentials) {
 
     let volume = await findVolume(region, user);
 
-    const userData = fs.readFileSync(`${__dirname}/user_data.sh`, 'utf8')
+    const userData = readFileSync(`${__dirname}/user_data.sh`, 'utf8')
         .replace(/%ebs_id%/g, volume.VolumeId)
         .replace(/%region%/g, region)
         .replace(/%key%/g, sshKey)

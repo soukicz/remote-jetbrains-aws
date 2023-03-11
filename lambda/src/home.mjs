@@ -1,6 +1,5 @@
 import render from "./render.mjs";
-
-const api = require('./api.mjs')
+import {findInstance} from "./api.mjs";
 const {EC2Client, DescribeRegionsCommand} = require("@aws-sdk/client-ec2");
 
 export default async function (user, region) {
@@ -11,7 +10,7 @@ export default async function (user, region) {
   <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%;height:20px"></div>
 </div>`
 
-    const instance = await api.findInstance(region, user)
+    const instance = await findInstance(region, user)
     console.log(JSON.stringify(instance))
     if (instance) {
         html += `

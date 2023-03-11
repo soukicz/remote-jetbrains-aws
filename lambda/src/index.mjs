@@ -1,9 +1,8 @@
 "use strict";
 import {hibernateInstance, migrate, startInstance, terminateInstance} from "./api.mjs";
 import home from "./home.mjs";
-
-const fs = require('fs')
-const auth = require('./auth')
+import { readFileSync } from 'fs'
+import {getPayload, handleRequest, responseCookie} from "./auth.mjs";
 
 const {SSMClient, GetParametersByPathCommand, GetParameterCommand} = require("@aws-sdk/client-ssm");
 
@@ -66,19 +65,19 @@ export async function handler(request, context, callback) {
 
     // explicitly call middleware
     if (request.rawPath === '/auth')
-        return await auth.handleRequest(request, Params);
+        return await handleRequest(request, Params);
 
     // explicitly expire token
     if (request.rawPath === '/auth/expire')
-        return auth.responseCookie("", new Date(0), `https://${host}/auth`);
+        return responseCookie("", new Date(0), `https://${host}/auth`);
 
     // if token is valid make original request
     // if invalid call middleware
     let payload
     try {
-        payload = auth.getPayload(request, Params)
+        payload = getPayload(request, Params)
     } catch (err) {
-        return await auth.handleRequest(request, Params);
+        return await handleRequest(request, Params);
     }
     console.log(JSON.stringify(payload))
 
@@ -104,7 +103,7 @@ export async function handler(request, context, callback) {
             headers: {
                 "Content-Type": "image/ico",
             },
-            body: fs.readFileSync(__dirname + '/../favicon.ico', 'base64'),
+            body: readFileSync(__dirname + '/../favicon.ico', 'base64'),
             isBase64Encoded: true
         }
     }

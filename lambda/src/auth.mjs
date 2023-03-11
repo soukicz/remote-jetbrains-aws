@@ -1,7 +1,7 @@
 "use strict";
-const AwsStrategy = require('passport-saml').Strategy;
-const jwt = require("jwt-simple");
-const querystring = require("querystring");
+import {Strategy as AwsStrategy} from "passport-saml";
+import {decode, encode} from 'jwt-simple'
+import {parse as parseQueryString} from 'querystring'
 
 const responseError = (err) => {
     const response = {
@@ -29,7 +29,7 @@ const requestCookie = (request, name) => {
     return cookies[name];
 };
 
-const responseCookie = (token, exp, host, url) => {
+export function responseCookie (token, exp, host, url) {
     const r = responseRedirect(`https://${host}${url}`);
     const path = url ? url.split('/')[1] : ''
     if (path === '/') {
@@ -37,7 +37,7 @@ const responseCookie = (token, exp, host, url) => {
     }
     r.cookies = [`access_token=${token}; expires=${exp.toUTCString()}; path=/${path}`]
     return r;
-};
+}
 
 const responseRedirect = (location) => ({
     statusCode: "302",
@@ -46,10 +46,10 @@ const responseRedirect = (location) => ({
     },
 });
 
-exports.handleRequest = (request, Params) => {
+export function handleRequest(request, Params) {
     return new Promise(function (fulfill) {
         const host = request.headers.host;
-        const body = querystring.parse(request.body)
+        const body = parseQueryString(request.body)
 
         const s = new AwsStrategy({
             passReqToCallback: true,
@@ -98,7 +98,7 @@ exports.handleRequest = (request, Params) => {
         s.success = (response) => {
             const exp = new Date(response.profile.getAssertion().Assertion.AuthnStatement[0].$.SessionNotOnOrAfter);
             const key = Buffer.from(Params['auth-hash-key'], "base64");
-            const token = jwt.encode({
+            const token = encode({
                 exp: Math.floor(exp / 1000),
                 sub: response.profile.nameID,
                 name: response.profile.attributes.DisplayName
@@ -109,11 +109,9 @@ exports.handleRequest = (request, Params) => {
 
         s.authenticate({body}, {additionalParams: {RelayState: request.rawPath === '/auth' ? '/' : request.rawPath}});
     });
-};
+}
 
 
-exports.responseCookie = responseCookie
-
-exports.getPayload = (request, Params) => {
-    return jwt.decode(requestCookie(request, "access_token"), Buffer.from(Params['auth-hash-key'], "base64"));
+export function getPayload(request, Params) {
+    return decode(requestCookie(request, "access_token"), Buffer.from(Params['auth-hash-key'], "base64"));
 }
