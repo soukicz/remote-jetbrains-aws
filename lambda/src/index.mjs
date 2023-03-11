@@ -3,8 +3,7 @@ import {hibernateInstance, migrate, startInstance, terminateInstance} from "./ap
 import home from "./home.mjs";
 import { readFileSync } from 'fs'
 import {getPayload, handleRequest, responseCookie} from "./auth.mjs";
-
-const {SSMClient, GetParametersByPathCommand, GetParameterCommand} = require("@aws-sdk/client-ssm");
+import {SSMClient, GetParametersByPathCommand, GetParameterCommand} from "@aws-sdk/client-ssm";
 
 // global const reused across invocations
 const Params = {

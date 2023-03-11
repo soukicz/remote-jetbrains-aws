@@ -1,6 +1,6 @@
 import render from "./render.mjs";
 import {findInstance} from "./api.mjs";
-const {EC2Client, DescribeRegionsCommand} = require("@aws-sdk/client-ec2");
+import {EC2Client, DescribeRegionsCommand} from "@aws-sdk/client-ec2"
 
 export default async function (user, region) {
 
