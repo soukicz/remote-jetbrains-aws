@@ -19,9 +19,11 @@ export default async function (user, region) {
             <br>`
     }
     if (instance && ['pending', 'running'].indexOf(instance.State.Name) > -1) {
-        html += `<h4>${user.replace(/[@.]/g, '-')}.${process.env.ALIAS_DOMAIN}</h4>
+        html += `Host: <strong>${user.replace(/[@.]/g, '-')}.${process.env.ALIAS_DOMAIN}</strong><br>
+            User: <strong>ec2-user</strong><br>
+            Type: <strong>${instance.InstanceType}</strong><br>
             IP: ${instance.PublicIpAddress}
-            <br>`
+            <br><br>`
         html += `
 
 <a href="#" class="btn btn-warning btn-lg px-4 hibernate-instance"><i class="fa fa-stop"></i> Stop instance</a>
@@ -32,6 +34,7 @@ export default async function (user, region) {
     } else {
         if (instance && instance.State.Name === 'stopped') {
             html += `
+Type: <strong>${instance.InstanceType}</strong><br><br>
 <a href="#" class="btn btn-danger btn-lg px-4 terminate-instance"><i class="fa fa-stop"></i> Terminate instance</a>
     `
         }
