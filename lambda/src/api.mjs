@@ -249,7 +249,7 @@ export async function startInstance(region, user, userName, ip, instanceType) {
         }))).Subnets[0].SubnetId
 
         const instance = await EC2.send(new RunInstancesCommand({
-            UserData: await createUserData(region, user, userName, aliasCredentials),
+            UserData: (await createUserData(region, user, userName, aliasCredentials)).toString('base64'),
             InstanceType: instanceType,
             EbsOptimized: true,
             IamInstanceProfile: {Name: 'ec2_instance_role_jetbrains'},
@@ -342,5 +342,5 @@ async function createUserData(region, user, userName, aliasCredentials) {
         .replace(/%hostedZone%/g, process.env.ALIAS_HOSTED_ZONE)
         .replace(/%domain%/g, `${user.replace(/[@.]/g, '-')}.${process.env.ALIAS_DOMAIN}`)
 
-    return Buffer.from(userData, 'utf8').toString('base64')
+    return Buffer.from(userData, 'utf8')
 }
