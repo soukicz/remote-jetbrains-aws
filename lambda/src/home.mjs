@@ -1,6 +1,7 @@
 import render from "./render.mjs";
 import {findInstance} from "./api.mjs";
 import {EC2Client, DescribeRegionsCommand} from "@aws-sdk/client-ec2"
+import {GetInstancePrices} from "./prices.mjs";
 
 export default async function (user, region) {
 
@@ -47,24 +48,15 @@ Type: <strong>${instance.InstanceType}</strong><br><br>
               <button type="button" class="btn btn-success dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="visually-hidden">Toggle Dropdown</span>
               </button>
-              <ul class="dropdown-menu">
-              <li><a class="dropdown-item start-instance" data-type="c5a.large" href="#">c5a.large</a></li>
-              <li><a class="dropdown-item start-instance" data-type="c5a.xlarge" href="#">c5a.xlarge</a></li>
-              <li><a class="dropdown-item start-instance" data-type="c5a.2xlarge" href="#">c5a.2xlarge</a></li>
-              <li><a class="dropdown-item start-instance" data-type="c5a.4xlarge" href="#">c5a.4xlarge</a></li>
-              <li><a class="dropdown-item start-instance" data-type="c6a.large" href="#">c6a.large</a></li>
-              <li><a class="dropdown-item start-instance" data-type="c6a.xlarge" href="#">c6a.xlarge</a></li>
-              <li><a class="dropdown-item start-instance" data-type="c6a.2xlarge" href="#">c6a.2xlarge</a></li>
-              <li><a class="dropdown-item start-instance" data-type="c6a.4xlarge" href="#">c6a.4xlarge</a></li>
-              <li><a class="dropdown-item start-instance" data-type="r5a.large" href="#">r5a.large</a></li>
-              <li><a class="dropdown-item start-instance" data-type="r5a.xlarge" href="#">r5a.xlarge</a></li>
-              <li><a class="dropdown-item start-instance" data-type="r5a.2xlarge" href="#">r5a.2xlarge</a></li>
-              <li><a class="dropdown-item start-instance" data-type="r5a.4xlarge" href="#">r5a.4xlarge</a></li>
-              <li><a class="dropdown-item start-instance" data-type="r6a.large" href="#">r6a.large</a></li>
-              <li><a class="dropdown-item start-instance" data-type="r6a.xlarge" href="#">r6a.xlarge</a></li>
-              <li><a class="dropdown-item start-instance" data-type="r6a.2xlarge" href="#">r6a.2xlarge</a></li>
-              <li><a class="dropdown-item start-instance" data-type="r6a.4xlarge" href="#">r6a.4xlarge</a></li>
-              </ul>
+              <ul class="dropdown-menu">`
+
+            const prices = await GetInstancePrices(region)
+            for (const type in prices) {
+                html += `<li><a class="dropdown-item start-instance" data-type="${type}" href="#">
+                    ${type} (${prices[type].vcpu} vCPU, ${Math.round(prices[type].memory / 1024)}GB, $${prices[type].price}/h)
+                </a></li>`
+            }
+            html +=  `</ul>
             </div>`
             html += `<br><br> 
                 <div class="dropdown">
