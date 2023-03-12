@@ -54,7 +54,7 @@ export async function GetInstancePrices(region) {
             if (type.BurstablePerformanceSupported) {
                 return false
             }
-            if (type.MemoryInfo.SizeInMiB < 10 * 1024) {
+            if (type.MemoryInfo.SizeInMiB < 8 * 1024) {
                 return false
             }
             if (type.MemoryInfo.SizeInMiB > 80 * 1024) {
