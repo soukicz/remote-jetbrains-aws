@@ -136,6 +136,7 @@ export async function handler(request, context, callback) {
             return createJsonResponse(await migrate(payload.sub, region, request.queryStringParameters.target), 200)
         }
     } catch (err) {
+        console.error(err)
         console.error(JSON.stringify(err))
         if (err.errorMessage) {
             return createJsonResponse({error: err.errorMessage}, 500);
