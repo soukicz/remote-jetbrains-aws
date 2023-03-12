@@ -19,7 +19,7 @@ import {
     DescribeSubnetsCommand,
     RunInstancesCommand,
     CreateSnapshotCommand,
-    waitUntilSnapshotCompleted, CopySnapshotCommand, DeleteVolumeCommand, AttachVolumeCommand
+    waitUntilSnapshotCompleted, CopySnapshotCommand, DeleteVolumeCommand, AttachVolumeCommand, waitUntilInstanceStopped
 } from "@aws-sdk/client-ec2";
 import {AssumeRoleCommand, STSClient} from "@aws-sdk/client-sts";
 import {GetParameterCommand, PutParameterCommand, SSMClient} from "@aws-sdk/client-ssm";
@@ -82,7 +82,7 @@ export async function terminateInstance(region, user) {
     return {status: true}
 }
 
-export async function hibernateInstance(region, user) {
+export async function stopInstance(region, user) {
     const instance = await findInstance(region, user)
     console.log(JSON.stringify(instance))
     if (!instance) {
@@ -91,9 +91,9 @@ export async function hibernateInstance(region, user) {
     const EC2 = new EC2Client({apiVersion: '2016-11-15', region: region});
     await EC2.send(new StopInstancesCommand({
         InstanceIds: [instance.InstanceId],
-        Hibernate: true
+        Hibernate: instance.HibernationOptions.Configured
     }))
-    await waitUntilInstanceExists({client: EC2, maxWaitTime: 120}, {InstanceIds: [instance.InstanceId]})
+    await waitUntilInstanceStopped({client: EC2, maxWaitTime: 120}, {InstanceIds: [instance.InstanceId]})
 
     return {status: true}
 }

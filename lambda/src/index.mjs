@@ -1,5 +1,5 @@
 "use strict";
-import {attachEbs, hibernateInstance, migrate, startInstance, terminateInstance} from "./api.mjs";
+import {attachEbs, stopInstance, migrate, startInstance, terminateInstance} from "./api.mjs";
 import home from "./home.mjs";
 import { readFileSync } from 'fs'
 import {getPayload, handleRequest, responseCookie} from "./auth.mjs";
@@ -125,8 +125,8 @@ export async function handler(request, context, callback) {
             return createJsonResponse(await startInstance(region, payload.sub, payload.name, ip, request.queryStringParameters.type), 200)
         }
 
-        if (request.rawPath === '/api/hibernate-instance') {
-            return createJsonResponse(await hibernateInstance(region, payload.sub), 200)
+        if (request.rawPath === '/api/stop-instance') {
+            return createJsonResponse(await stopInstance(region, payload.sub), 200)
         }
 
         if (request.rawPath === '/api/terminate-instance') {

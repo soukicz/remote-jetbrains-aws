@@ -54,10 +54,10 @@ document.querySelectorAll('.terminate-instance').forEach(function (button) {
     })
 })
 
-document.querySelectorAll('.hibernate-instance').forEach(function (button) {
+document.querySelectorAll('.stop-instance').forEach(function (button) {
     button.addEventListener('click', function (e) {
         e.preventDefault()
 
-        callApi('/api/hibernate-instance', this)
+        callApi('/api/stop-instance', this)
     })
 });

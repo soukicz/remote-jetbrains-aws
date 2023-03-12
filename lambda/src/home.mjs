@@ -26,7 +26,7 @@ export default async function (user, region) {
             <br><br>`
         html += `
 
-<a href="#" class="btn btn-warning btn-lg px-4 hibernate-instance"><i class="fa fa-stop"></i> Stop instance</a>
+<a href="#" class="btn btn-warning btn-lg px-4 stop-instance"><i class="fa fa-stop"></i> Stop instance</a>
 &nbsp;
 <a href="#" class="btn btn-danger btn-lg px-4 terminate-instance"><i class="fa fa-stop"></i> Terminate instance</a>
     `
