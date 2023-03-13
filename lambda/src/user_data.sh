@@ -62,7 +62,7 @@ fi
 
 [ ! -f /home/ec2-user/.ssh/id_rsa ] && ssh-keygen -t rsa -f /home/ec2-user/.ssh/id_rsa -q -P ""
 
-yum install -y git
+yum install -y git docker
 
 git config --global user.name "%userName%"
 git config --global user.email "%email%"

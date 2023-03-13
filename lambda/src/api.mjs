@@ -153,7 +153,7 @@ export async function startInstance(region, user, userName, ip, instanceType) {
     ]
 
     const ami = JSON.parse((await SSM.send(new GetParameterCommand({
-        Name: '/aws/service/ecs/optimized-ami/amazon-linux-2/recommended',
+        Name: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2',
         WithDecryption: true
     }))).Parameter.Value).image_id
 
