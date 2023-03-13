@@ -186,7 +186,7 @@ export async function startInstance(region, user, userName, ip, instanceType) {
                 GroupId: securityGroup,
                 FromPort: port,
                 ToPort: port,
-                CidrIp: `${ip}/24`,
+                CidrIp: `${ip}/32`,
                 IpProtocol: 'tcp'
             }))
         } catch (e) {
