@@ -399,6 +399,10 @@ export async function allowCurrentIp(user, region, ip) {
     } catch (e) {
         console.log(e)
     }
+
+    return {
+        status: true
+    }
 }
 
 export async function revokeIp(user, region, ip) {
@@ -417,5 +421,9 @@ export async function revokeIp(user, region, ip) {
         }))
     } catch (e) {
         console.log(e)
+    }
+
+    return {
+        status: true
     }
 }
