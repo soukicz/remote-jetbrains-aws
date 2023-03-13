@@ -52,9 +52,21 @@ async function load(region) {
         'us-gov-west-1': 'AWS GovCloud (US-West)'
     };
 
-    const instanceTypesData = await ec2Client.send(new DescribeInstanceTypesCommand({}))
+    const instanceTypesData = []
+    let typesNextToken = null
+    do {
+        const typesResponse = await ec2Client.send(new DescribeInstanceTypesCommand({
+            MaxResults: 100,
+            NextToken: typesNextToken
+        }))
+        for (const type of typesResponse.InstanceTypes) {
+            instanceTypesData.push(type)
+        }
+        typesNextToken = typesResponse.NextToken
+    } while (typesNextToken)
+
     const instanceList = {}
-    const filteredInstanceTypes = instanceTypesData.InstanceTypes
+    const filteredInstanceTypes = instanceTypesData
         .filter(type => {
             const classLetter = type.InstanceType.substr(0, 1)
             if (['c', 'r', 'm'].indexOf(classLetter) < 0) {
