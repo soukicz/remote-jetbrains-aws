@@ -1,5 +1,5 @@
 "use strict";
-import {attachEbs, stopInstance, migrate, startInstance, terminateInstance} from "./api.mjs";
+import {attachEbs, stopInstance, migrate, startInstance, terminateInstance, allowCurrentIp, revokeIp} from "./api.mjs";
 import home from "./home.mjs";
 import { readFileSync } from 'fs'
 import {getPayload, handleRequest, responseCookie} from "./auth.mjs";
@@ -105,7 +105,7 @@ export async function handler(request, context, callback) {
             headers: {
                 "Content-Type": "text/html; charset=UTF-8",
             },
-            body: await home(payload.sub, region),
+            body: await home(payload.sub, region, ip),
             isBase64Encoded: false
         }
     }
@@ -134,6 +134,12 @@ export async function handler(request, context, callback) {
         }
         if (request.rawPath === '/api/migrate-instance') {
             return createJsonResponse(await migrate(payload.sub, region, request.queryStringParameters.target), 200)
+        }
+        if (request.rawPath === '/api/allow-current-ip') {
+            return createJsonResponse(await allowCurrentIp(payload.sub, region, ip), 200)
+        }
+        if (request.rawPath === '/api/revoke-ip') {
+            return createJsonResponse(await revokeIp(payload.sub, region, request.queryStringParameters.ip), 200)
         }
     } catch (err) {
         console.error(err)

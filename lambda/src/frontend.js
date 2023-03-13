@@ -61,3 +61,19 @@ document.querySelectorAll('.stop-instance').forEach(function (button) {
         callApi('/api/stop-instance', this)
     })
 });
+
+document.querySelectorAll('.allow-current-ip').forEach(function (button) {
+    button.addEventListener('click', function (e) {
+        e.preventDefault()
+
+        callApi('/api/allow-current-ip', this)
+    })
+});
+
+document.querySelectorAll('.revoke-ip').forEach(function (button) {
+    button.addEventListener('click', function (e) {
+        e.preventDefault()
+
+        callApi(`/api/revoke-ip?ip=${encodeURIComponent(this.dataset.ip)}`, this)
+    })
+});

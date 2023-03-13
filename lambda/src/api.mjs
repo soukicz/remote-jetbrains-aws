@@ -19,7 +19,12 @@ import {
     DescribeSubnetsCommand,
     RunInstancesCommand,
     CreateSnapshotCommand,
-    waitUntilSnapshotCompleted, CopySnapshotCommand, DeleteVolumeCommand, AttachVolumeCommand, waitUntilInstanceStopped
+    waitUntilSnapshotCompleted,
+    CopySnapshotCommand,
+    DeleteVolumeCommand,
+    AttachVolumeCommand,
+    waitUntilInstanceStopped,
+    RevokeSecurityGroupIngressCommand
 } from "@aws-sdk/client-ec2";
 import {AssumeRoleCommand, STSClient} from "@aws-sdk/client-sts";
 import {GetParameterCommand, PutParameterCommand, SSMClient} from "@aws-sdk/client-ssm";
@@ -143,10 +148,6 @@ export async function startInstance(region, user, userName, ip, instanceType) {
     const EC2 = new EC2Client({apiVersion: '2016-11-15', region: region});
     const SSM = new SSMClient({region: region})
 
-    const filterTags = [
-        {Name: 'tag:Name', Values: ['jetbrains']},
-        {Name: 'tag:Owner', Values: [user]}
-    ]
     const tags = [
         {Key: 'Name', Value: 'jetbrains'},
         {Key: 'Owner', Value: user},
@@ -157,12 +158,10 @@ export async function startInstance(region, user, userName, ip, instanceType) {
         WithDecryption: true
     }))).Parameter.Value
 
-    const securityGroups = (await EC2.send(new DescribeSecurityGroupsCommand({
-        Filters: filterTags
-    }))).SecurityGroups
-
-    let securityGroup
-    if (securityGroups.length === 0) {
+    let securityGroup = await findSecurityGroup(user, region)
+    if (securityGroup) {
+        securityGroup = securityGroup.GroupId
+    } else {
         const vpc = await findVpc(region)
 
         securityGroup = (await EC2.send(new CreateSecurityGroupCommand({
@@ -175,9 +174,6 @@ export async function startInstance(region, user, userName, ip, instanceType) {
             Resources: [securityGroup],
             Tags: tags
         }))
-
-    } else {
-        securityGroup = securityGroups[0].GroupId
     }
 
     for (const port of [22]) {
@@ -351,7 +347,7 @@ async function createUserData(region, user, userName, aliasCredentials) {
     return Buffer.from(userData, 'utf8')
 }
 
-export async function getAllowedIps(user, region) {
+async function findSecurityGroup(user, region) {
     const filterTags = [
         {Name: 'tag:Name', Values: ['jetbrains']},
         {Name: 'tag:Owner', Values: [user]}
@@ -364,17 +360,62 @@ export async function getAllowedIps(user, region) {
     })))
 
     if (securityGroups.SecurityGroups.length === 0) {
+        return null
+    }
+
+    return securityGroups.SecurityGroups[0]
+}
+
+export async function getAllowedIps(user, region) {
+    const securityGroup = await findSecurityGroup(user, region)
+    if (!securityGroup) {
         return []
     }
 
     const ips = []
-    securityGroups.SecurityGroups.forEach(group => {
-        group.IpPermissions.forEach(permission => {
-            permission.IpRanges.forEach(range => {
-                ips.push(range.CidrIp)
-            })
+    securityGroup.IpPermissions.forEach(permission => {
+        permission.IpRanges.forEach(range => {
+            ips.push(range.CidrIp)
         })
     })
 
     return ips
+}
+
+export async function allowCurrentIp(user, region, ip) {
+    const group = await findSecurityGroup(user, region)
+    if (!group) {
+        return;
+    }
+    const EC2 = new EC2Client({apiVersion: '2016-11-15', region: region});
+    try {
+        await EC2.send(new AuthorizeSecurityGroupIngressCommand({
+            GroupId: group.GroupId,
+            FromPort: 22,
+            ToPort: 22,
+            CidrIp: `${ip}/32`,
+            IpProtocol: 'tcp'
+        }))
+    } catch (e) {
+        console.log(e)
+    }
+}
+
+export async function revokeIp(user, region, ip) {
+    const group = await findSecurityGroup(user, region)
+    if (!group) {
+        return;
+    }
+    const EC2 = new EC2Client({apiVersion: '2016-11-15', region: region});
+    try {
+        await EC2.send(new RevokeSecurityGroupIngressCommand({
+            GroupId: group.GroupId,
+            FromPort: 22,
+            ToPort: 22,
+            CidrIp: ip,
+            IpProtocol: 'tcp'
+        }))
+    } catch (e) {
+        console.log(e)
+    }
 }

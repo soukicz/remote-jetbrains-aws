@@ -3,7 +3,7 @@ import {findInstance, getAllowedIps} from "./api.mjs";
 import {EC2Client, DescribeRegionsCommand} from "@aws-sdk/client-ec2"
 import {GetInstancePrices} from "./prices.mjs";
 
-export default async function (user, region) {
+export default async function (user, region, currentIp) {
 
     let html = `
 <div class="alert alert-danger" style="display: none"></div>
@@ -95,8 +95,17 @@ Type: <strong>${instance.InstanceType}</strong><br><br>
     <div class="col">
     <h5>IP whitelist</h5>
     <ul>`
+    let ipNeedsAllow = true
     for (const allowedIp of (await getAllowedIps(user, region))) {
-        html += `<li>${allowedIp}</li>`
+        if (allowedIp === `${currentIp}/32`) {
+            html += `<li><strong>${allowedIp.split('/')[0]}</strong> (current IP) (<a href="#" class="revoke-ip" data-ip="${allowedIp}">revoke</a>)</li>`
+            ipNeedsAllow = false
+        } else {
+            html += `<li>${allowedIp.split('/')[0]} (<a href="#" class="revoke-ip" data-ip="${allowedIp}">revoke</a>)</li>`
+        }
+    }
+    if (ipNeedsAllow) {
+        html += `<li><a href="#" class="allow-current-ip">allow current IP (${currentIp})</a></li>`
     }
     html += '</ul>'
 
