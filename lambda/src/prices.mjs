@@ -1,8 +1,17 @@
 import {EC2Client, DescribeInstanceTypesCommand} from "@aws-sdk/client-ec2";
 import {GetProductsCommand, PricingClient} from "@aws-sdk/client-pricing";
 
-export async function GetInstancePrices(region) {
+const cache = {}
 
+export async function GetInstancePrices(region) {
+    if (!cache[region]) {
+        cache[region] = await load(region)
+    }
+
+    return cache[region]
+}
+
+async function load(region) {
     const ec2Client = new EC2Client({
         region: region
     });
