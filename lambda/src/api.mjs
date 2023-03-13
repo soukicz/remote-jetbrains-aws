@@ -371,7 +371,7 @@ export async function getAllowedIps(user, region) {
     securityGroups.SecurityGroups.forEach(group => {
         group.IpPermissions.forEach(permission => {
             permission.IpRanges.forEach(range => {
-                ips.push(range)
+                ips.push(range.CidrIp)
             })
         })
     })
