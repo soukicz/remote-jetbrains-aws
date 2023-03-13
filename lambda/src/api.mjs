@@ -350,3 +350,31 @@ async function createUserData(region, user, userName, aliasCredentials) {
 
     return Buffer.from(userData, 'utf8')
 }
+
+export async function getAllowedIps(user, region) {
+    const filterTags = [
+        {Name: 'tag:Name', Values: ['jetbrains']},
+        {Name: 'tag:Owner', Values: [user]}
+    ]
+
+    const EC2 = new EC2Client({apiVersion: '2016-11-15', region: region});
+
+    const securityGroups = (await EC2.send(new DescribeSecurityGroupsCommand({
+        Filters: filterTags
+    })))
+
+    if (securityGroups.SecurityGroups.length === 0) {
+        return []
+    }
+
+    const ips = []
+    securityGroups.SecurityGroups.forEach(group => {
+        group.IpPermissions.forEach(permission => {
+            permission.IpRanges.forEach(range => {
+                ips.push(range)
+            })
+        })
+    })
+
+    return ips
+}

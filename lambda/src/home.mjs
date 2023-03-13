@@ -1,5 +1,5 @@
 import render from "./render.mjs";
-import {findInstance} from "./api.mjs";
+import {findInstance, getAllowedIps} from "./api.mjs";
 import {EC2Client, DescribeRegionsCommand} from "@aws-sdk/client-ec2"
 import {GetInstancePrices} from "./prices.mjs";
 
@@ -12,7 +12,12 @@ export default async function (user, region) {
 </div>`
 
     const instance = await findInstance(region, user)
-    console.log(JSON.stringify(instance))
+
+    html += `
+    <div class="container">
+        <div class="row">
+        <div class="col">`
+
     if (instance) {
         html += `
 <h3>${region}</h3>
@@ -84,6 +89,18 @@ Type: <strong>${instance.InstanceType}</strong><br><br>
                 </div>`
         }
     }
+
+    html += `
+    </div>
+    <div class="col">
+    <h5>IP whitelist</h5>
+    <ul>`
+    for (const allowedIp of (await getAllowedIps(user, region))) {
+        html += `<li>${allowedIp}</li>`
+    }
+    html += '</ul>'
+
+    html += '</div></div>'
 
     return render(html, user);
 }
