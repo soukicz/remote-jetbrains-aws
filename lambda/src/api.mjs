@@ -152,10 +152,10 @@ export async function startInstance(region, user, userName, ip, instanceType) {
         {Key: 'Owner', Value: user},
     ]
 
-    const ami = JSON.parse((await SSM.send(new GetParameterCommand({
+    const ami = (await SSM.send(new GetParameterCommand({
         Name: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2',
         WithDecryption: true
-    }))).Parameter.Value).image_id
+    }))).Parameter.Value
 
     const securityGroups = (await EC2.send(new DescribeSecurityGroupsCommand({
         Filters: filterTags
