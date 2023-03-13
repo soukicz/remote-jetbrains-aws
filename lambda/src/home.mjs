@@ -40,24 +40,23 @@ Type: <strong>${instance.InstanceType}</strong><br><br>
     `
         }
 
-        if (instance) {
-            html += `<a href="#" class="btn btn-success btn-lg px-4 start-instance">Start instance</a>`
-        } else {
-            html += `<div class="btn-group">
-              <button type="button" class="btn btn-success start-instance" data-type="r5a.large" >Start instance</button>
+
+        html += `<div class="btn-group">
+              <button type="button" class="btn btn-success start-instance" data-type="${instance ? instance.InstanceType : 'r5a.large'}" >Start instance</button>
               <button type="button" class="btn btn-success dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="visually-hidden">Toggle Dropdown</span>
               </button>
               <ul class="dropdown-menu">`
 
-            const prices = await GetInstancePrices(region)
-            for (const type in prices) {
-                html += `<li><a class="dropdown-item start-instance" data-type="${type}" href="#">
+        const prices = await GetInstancePrices(region)
+        for (const type in prices) {
+            html += `<li><a class="dropdown-item start-instance" data-type="${type}" href="#">
                     ${type} (${prices[type].vcpu} vCPU, ${Math.round(prices[type].memory / 1024)}GB, $${prices[type].price}/h)
                 </a></li>`
-            }
-            html +=  `</ul>
+        }
+        html += `</ul>
             </div>`
+        if (!instance) {
             html += `<br><br> 
                 <div class="dropdown">
                   <button class="btn btn-warning dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">

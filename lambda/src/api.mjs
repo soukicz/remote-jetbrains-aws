@@ -226,6 +226,12 @@ export async function startInstance(region, user, userName, ip, instanceType) {
     const existingInstance = await findInstance(region, user)
 
     if (existingInstance) {
+        if (instanceType && instanceType !== existingInstance.InstanceType) {
+            await EC2.send(new ModifyInstanceAttributeCommand({
+                InstanceId: existingInstance.InstanceId,
+                InstanceType: instanceType
+            }))
+        }
         if (['stopped', 'stopping'].indexOf(existingInstance.State.Name) > -1) {
             await EC2.send(new ModifyInstanceAttributeCommand({
                 InstanceId: existingInstance.InstanceId,
