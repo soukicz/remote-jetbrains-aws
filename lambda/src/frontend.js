@@ -1,6 +1,6 @@
 function callApi(url) {
     document.querySelector('.loading').style.display = 'block'
-    document.querySelectorAll('.btn, .btn-group, .dropdown').forEach(btn => {
+    document.querySelectorAll('.btn, .btn-group, .dropdown, .container').forEach(btn => {
         btn.style.display = 'none'
     })
 
