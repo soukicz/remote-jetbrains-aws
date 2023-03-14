@@ -23,6 +23,29 @@ yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/li
 
 yum install -y awscli
 
+if [ -d /home/ec2-user/.ssh-server ]; then
+  for name in ssh_host_ecdsa_key ssh_host_ed25519_key ssh_host_rsa_key
+  do
+    cp -f "/home/ec2-user/.ssh-server/$name" "/etc/ssh/$name"
+    chown root:ssh_keys "/etc/ssh/$name"
+    chmod 640 "/etc/ssh/$name"
+    cp -f "/home/ec2-user/.ssh-server/$name.pub" "/etc/ssh/$name.pub"
+    chown root:root "/etc/ssh/$name.pub"
+    chmod 644 "/etc/ssh/$name.pub"
+  done
+  systemctl restart sshd.service
+else
+  mkdir /home/ec2-user/.ssh-server
+  for name in ssh_host_ecdsa_key ssh_host_ed25519_key ssh_host_rsa_key
+  do
+    cp "/etc/ssh/$name" "/home/ec2-user/.ssh-server/$name"
+    cp "/etc/ssh/$name.pub" "/home/ec2-user/.ssh-server/$name.pub"
+  done
+  chown -R root:root /home/ec2-user/.ssh-server
+  chmod -R 600 /home/ec2-user/.ssh-server
+  chmod 700 /home/ec2-user/.ssh-server
+fi
+
 INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
 PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
 
