@@ -342,13 +342,16 @@ export async function getSshKey(user) {
 }
 
 export async function putSshKey(user, key) {
+    key = key.trim()
     if (!key) {
         throw new Error('Missing public key data')
     }
 
-    // @see https://github.com/nemchik/ssh-key-regex
-    if (key.match(new RegExp('^(ssh-ed25519 AAAAC3NzaC1lZDI1NTE5|sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29t|ssh-rsa AAAAB3NzaC1yc2)[0-9A-Za-z+/]+[=]{0,3}(\s.*)?$'))) {
-        throw new Error('Invalid public key format')
+    for (const keyLine of key.split("\n")) {
+        // @see https://github.com/nemchik/ssh-key-regex
+        if (keyLine.match(new RegExp('^(ssh-ed25519 AAAAC3NzaC1lZDI1NTE5|sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29t|ssh-rsa AAAAB3NzaC1yc2)[0-9A-Za-z+/]+[=]{0,3}(\s.*)?$'))) {
+            throw new Error('Invalid public key format')
+        }
     }
 
     const SSM = new SSMClient({region: 'eu-central-1'})

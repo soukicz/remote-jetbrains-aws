@@ -87,15 +87,17 @@ document.querySelectorAll('.revoke-ip').forEach(function (button) {
 document.querySelectorAll('.ssh-button').forEach(function (button) {
     button.addEventListener('click', function (e) {
         e.preventDefault()
-        const key = document.getElementById('ssh-value').value
+        const key = document.getElementById('ssh-value').value.trim()
         if (!key) {
             alert('Missing public key')
             return;
         }
-        // @see https://github.com/nemchik/ssh-key-regex
-        if (key.match(new RegExp('^(ssh-ed25519 AAAAC3NzaC1lZDI1NTE5|sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29t|ssh-rsa AAAAB3NzaC1yc2)[0-9A-Za-z+/]+[=]{0,3}(\s.*)?$'))) {
-            alert('Invalid public key format')
-            return;
+        for(const keyLine of key.split("\n")) {
+            // @see https://github.com/nemchik/ssh-key-regex
+            if (keyLine.match(new RegExp('^(ssh-ed25519 AAAAC3NzaC1lZDI1NTE5|sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29t|ssh-rsa AAAAB3NzaC1yc2)[0-9A-Za-z+/]+[=]{0,3}(\s.*)?$'))) {
+                alert('Invalid public key format')
+                return;
+            }
         }
         callApi(`/api/update-ssh-key`, {key: key})
     })
