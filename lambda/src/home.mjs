@@ -114,7 +114,7 @@ Type: <strong>${instance.InstanceType}</strong><br><br>
 
     html += `<h5>SSH key</h5>`
     if (sshKey) {
-        html += `<textarea class="form-control" rows="3" readonly>${sshKey}</textarea>`
+        html += `<span class="badge text-bg-primary">key configured</span>`
     } else {
         html += `
         <label for="ssh-value" class="form-label">Public SSH key</label>
