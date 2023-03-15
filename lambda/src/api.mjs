@@ -27,7 +27,7 @@ import {
     RevokeSecurityGroupIngressCommand
 } from "@aws-sdk/client-ec2";
 import {AssumeRoleCommand, STSClient} from "@aws-sdk/client-sts";
-import {GetParameterCommand, PutParameterCommand, SSMClient} from "@aws-sdk/client-ssm";
+import {GetParameterCommand, ParameterType, PutParameterCommand, SSMClient} from "@aws-sdk/client-ssm";
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -326,13 +326,42 @@ export async function migrate(user, fromRegion, targetRegion) {
     }
 }
 
-async function createUserData(region, user, userName, aliasCredentials) {
+export async function getSshKey(user) {
     const SSM = new SSMClient({region: 'eu-central-1'})
+    try {
+        return (await SSM.send(new GetParameterCommand({
+            Name: '/ec2/key/' + user.replace('@', '-'),
+            WithDecryption: true
+        }))).Parameter.Value
+    } catch (e) {
+        if (e.name === 'ParameterNotFound') {
+            return null
+        }
+        throw e
+    }
+}
 
-    const sshKey = (await SSM.send(new GetParameterCommand({
+export async function putSshKey(user, key) {
+    if (!key) {
+        throw new Error('Missing public key data')
+    }
+
+    // @see https://github.com/nemchik/ssh-key-regex
+    if (key.match(new RegExp('^(ssh-ed25519 AAAAC3NzaC1lZDI1NTE5|sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29t|ssh-rsa AAAAB3NzaC1yc2)[0-9A-Za-z+/]+[=]{0,3}(\s.*)?$'))) {
+        throw new Error('Invalid public key format')
+    }
+
+    const SSM = new SSMClient({region: 'eu-central-1'})
+    await SSM.send(new PutParameterCommand({
         Name: '/ec2/key/' + user.replace('@', '-'),
-        WithDecryption: true
-    }))).Parameter.Value
+        Value: key,
+        Overwrite: false,
+        Type: ParameterType.SECURE_STRING
+    }))
+}
+
+async function createUserData(region, user, userName, aliasCredentials) {
+    const sshKey = await getSshKey(user)
 
     const userData = readFileSync(`${__dirname}/user_data.sh`, 'utf8')
         .replace(/%attachUrl%/g, `${process.env.SELF_URL}attach-ebs?user=${encodeURIComponent(user)}`)

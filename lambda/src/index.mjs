@@ -1,5 +1,14 @@
 "use strict";
-import {attachEbs, stopInstance, migrate, startInstance, terminateInstance, allowCurrentIp, revokeIp} from "./api.mjs";
+import {
+    attachEbs,
+    stopInstance,
+    migrate,
+    startInstance,
+    terminateInstance,
+    allowCurrentIp,
+    revokeIp,
+    putSshKey
+} from "./api.mjs";
 import home from "./home.mjs";
 import { readFileSync } from 'fs'
 import {getPayload, handleRequest, responseCookie} from "./auth.mjs";
@@ -155,6 +164,9 @@ export async function handler(request, context, callback) {
         }
         if (request.rawPath === '/api/revoke-ip') {
             return createJsonResponse(await revokeIp(payload.sub, region, request.queryStringParameters.ip), 200)
+        }
+        if (request.rawPath === '/api/update-ssh-key') {
+            return createJsonResponse(await putSshKey(payload.sub, JSON.parse(request.body).key), 200)
         }
     } catch (err) {
         console.error(err)

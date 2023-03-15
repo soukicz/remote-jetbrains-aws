@@ -1,5 +1,5 @@
 import render from "./render.mjs";
-import {findInstance, getAllowedIps} from "./api.mjs";
+import {findInstance, getAllowedIps, getSshKey} from "./api.mjs";
 import {EC2Client, DescribeRegionsCommand} from "@aws-sdk/client-ec2"
 import {GetInstancePrices} from "./prices.mjs";
 
@@ -10,6 +10,8 @@ export default async function (user, region, currentIp) {
     <div class="progress loading" style="display: none">
   <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%;height:20px"></div>
 </div>`
+
+    let sshKey = await getSshKey(user);
 
     const instance = await findInstance(region, user)
 
@@ -45,22 +47,23 @@ Type: <strong>${instance.InstanceType}</strong><br><br>
     `
         }
 
-
-        html += `<div class="btn-group">
+        if (sshKey) {
+            html += `<div class="btn-group">
               <button type="button" class="btn btn-success start-instance" data-type="${instance ? instance.InstanceType : 'r5a.large'}" >Start instance</button>
               <button type="button" class="btn btn-success dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="visually-hidden">Toggle Dropdown</span>
               </button>
               <ul class="dropdown-menu">`
 
-        const prices = await GetInstancePrices(region)
-        for (const type in prices) {
-            html += `<li><a class="dropdown-item start-instance" data-type="${type}" href="#">
+            const prices = await GetInstancePrices(region)
+            for (const type in prices) {
+                html += `<li><a class="dropdown-item start-instance" data-type="${type}" href="#">
                     ${type} (${prices[type].vcpu} vCPU, ${Math.round(prices[type].memory / 1024)}GB, $${prices[type].price}/h)
                 </a></li>`
-        }
-        html += `</ul>
+            }
+            html += `</ul>
             </div>`
+        }
         if (!instance) {
             html += `<br><br> 
                 <div class="dropdown">
@@ -108,6 +111,16 @@ Type: <strong>${instance.InstanceType}</strong><br><br>
         html += `<li><a href="#" class="allow-current-ip">allow current IP (${currentIp})</a></li>`
     }
     html += '</ul>'
+
+    html += `<h5>SSH key</h5>`
+    if (sshKey) {
+        html += `<textarea class="form-control" rows="3" readonly>${sshKey}</textarea>`
+    } else {
+        html += `
+        <label for="ssh-value" class="form-label">Public SSH key</label>
+        <textarea class="form-control" rows="3" id="ssh-value"></textarea>
+        <button class="btn btn-primary" id="ssh-button">save key</button>`
+    }
 
     html += '</div></div>'
 
