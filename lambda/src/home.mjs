@@ -96,6 +96,10 @@ Type: <strong>${instance.InstanceType}</strong><br><br>
     html += `
     </div>
     <div class="col">
+    <ul style="font-size: 80%">
+        <li>instance is stopped after 15 minutes without SSH connection</li>
+        <li>only /home/ec2-user/ directory is persisted during instance termination/migration</li>
+    </ul>
     <h5>IP whitelist</h5>
     <ul>`
     let ipNeedsAllow = true
