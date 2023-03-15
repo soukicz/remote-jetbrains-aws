@@ -101,12 +101,12 @@ async function load(region) {
 
     const instanceTypes = filteredInstanceTypes.map((type) => type.InstanceType);
 
-    for (const instanceType of instanceTypes) {
+    let nextPricing = null;
+    do {
         const pricingData = await pricingClient.send(new GetProductsCommand({
+            NextToken: nextPricing,
             ServiceCode: "AmazonEC2", Filters: [{
                 Type: 'TERM_MATCH', Field: "location", Value: regionCodes[region],
-            }, {
-                Type: 'TERM_MATCH', Field: "instanceType", Value: instanceType
             }, {
                 'Type': 'TERM_MATCH', 'Field': 'capacitystatus', 'Value': 'Used'
             }, {
@@ -117,15 +117,19 @@ async function load(region) {
                 'Type': 'TERM_MATCH', 'Field': 'operatingSystem', 'Value': 'Linux'
             }],
         }))
+        nextPricing = pricingData.NextToken
 
         pricingData.PriceList.forEach((price) => {
             const product = JSON.parse(price);
 
             const instanceType = product.product.attributes.instanceType;
+            if (instanceTypes.indexOf(instanceType) < 0) {
+                return;
+            }
             instanceList[instanceType].price = parseFloat(Object.values(Object.values(product.terms.OnDemand)[0].priceDimensions)[0].pricePerUnit.USD);
 
         });
-    }
+    } while (nextPricing)
 
     let index = Object.keys(instanceList).sort(function (a, b) {
         const aParts = a.split('.')
