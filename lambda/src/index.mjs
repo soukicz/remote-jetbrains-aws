@@ -3,7 +3,7 @@ import {attachEbs, stopInstance, migrate, startInstance, terminateInstance, allo
 import home from "./home.mjs";
 import { readFileSync } from 'fs'
 import {getPayload, handleRequest, responseCookie} from "./auth.mjs";
-import {SSMClient, GetParametersByPathCommand, GetParameterCommand} from "@aws-sdk/client-ssm";
+import {SSMClient, GetParametersByPathCommand, GetParameterCommand, PutParameterCommand} from "@aws-sdk/client-ssm";
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -93,11 +93,26 @@ export async function handler(request, context, callback) {
     }
     console.log(JSON.stringify(payload))
 
-    const region = (await (new SSMClient({region: 'eu-central-1'}))
-        .send(new GetParameterCommand({
-            Name: '/ec2/region/' + payload.sub.replace('@', '-'),
-            WithDecryption: true
-        }))).Parameter.Value
+    const ssm = new SSMClient({region: 'eu-central-1'});
+    const parameterPath = '/ec2/region/' + payload.sub.replace('@', '-')
+    let region
+    try {
+        region = (await ssm
+            .send(new GetParameterCommand({
+                Name: parameterPath,
+                WithDecryption: true
+            }))).Parameter.Value
+    } catch (e) {
+        if (e.name === 'ParameterNotFound') {
+            region = 'eu-central-1'
+            await ssm.send(new PutParameterCommand({
+                Name: parameterPath,
+                Value: region,
+            }))
+        } else {
+            throw e
+        }
+    }
 
     if (request.rawPath === '/') {
         return {
