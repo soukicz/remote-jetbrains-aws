@@ -313,6 +313,7 @@ export async function migrate(user, fromRegion, targetRegion) {
     await (new SSMClient({region: 'eu-central-1'}))
         .send(new PutParameterCommand({
             Name: '/ec2/region/' + user.replace('@', '-'),
+            Type: ParameterType.SECURE_STRING,
             Value: targetRegion,
             Overwrite: true
         }))
