@@ -12,7 +12,7 @@ import {
 import home from "./home.mjs";
 import { readFileSync } from 'fs'
 import {getPayload, handleRequest, responseCookie} from "./auth.mjs";
-import {SSMClient, GetParametersByPathCommand, GetParameterCommand, PutParameterCommand} from "@aws-sdk/client-ssm";
+import {SSMClient, GetParametersByPathCommand, GetParameterCommand, PutParameterCommand, ParameterType} from "@aws-sdk/client-ssm";
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -117,6 +117,8 @@ export async function handler(request, context, callback) {
             await ssm.send(new PutParameterCommand({
                 Name: parameterPath,
                 Value: region,
+                Type: ParameterType.SECURE_STRING,
+                Overwrite: false
             }))
         } else {
             throw e
