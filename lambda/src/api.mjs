@@ -31,19 +31,69 @@ import {GetParameterCommand, ParameterType, PutParameterCommand, SSMClient} from
 
 import path from 'path';
 import { fileURLToPath } from 'url';
+import {ChangeResourceRecordSetsCommand, Route53Client} from "@aws-sdk/client-route-53";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export async function attachEbs(user) {
-    const region = (await (new SSMClient({region: 'eu-central-1'}))
+async function getUserRegion(user){
+    return (await (new SSMClient({region: 'eu-central-1'}))
         .send(new GetParameterCommand({
             Name: '/ec2/region/' + user.replace('@', '-'),
             WithDecryption: true
         }))).Parameter.Value
+}
+
+export async function attachEbs(user) {
+    const region = await getUserRegion(user)
 
     const instance = await findInstance(region, user)
     const volume = await findVolume(region, user)
+    const EC2 = new EC2Client({apiVersion: '2016-11-15', region: region});
+    await EC2.send(new AttachVolumeCommand({
+        InstanceId: instance.InstanceId,
+        VolumeId: volume.VolumeId,
+        Device: '/dev/xvde'
+    }))
+}
+
+export async function updateAlias(user) {
+    const region = await getUserRegion(user)
+
+    const instance = await findInstance(region, user)
+
+    const sts = new STSClient({apiVersion: '2011-06-15'});
+    const aliasCredentials = await sts.send(new AssumeRoleCommand({
+        RoleArn: process.env.ALIAS_ROLE_ARN,
+        RoleSessionName: user.replace('@', ''),
+        DurationSeconds: 15 * 60
+    }))
+
+    const route53 = new Route53Client({
+        apiVersion: '2013-04-01',
+        credentials: aliasCredentials.Credentials
+    });
+
+    await route53.send(new ChangeResourceRecordSetsCommand({
+        HostedZoneId: process.env.ALIAS_HOSTED_ZONE,
+        ChangeBatch: {
+            Changes: [
+                {
+                    Action: 'UPSERT',
+                    ResourceRecordSet: {
+                        Name: `${user.replace(/[@.]/g, '-')}.${process.env.ALIAS_DOMAIN}`,
+                        Type: 'A',
+                        TTL: 15,
+                        ResourceRecords: [
+                            {Value: instance.PublicIpAddress}
+                        ]
+                    }
+                }
+            ]
+        }
+    }));
+
+    instance.PublicIpAddress
     const EC2 = new EC2Client({apiVersion: '2016-11-15', region: region});
     await EC2.send(new AttachVolumeCommand({
         InstanceId: instance.InstanceId,
@@ -190,13 +240,6 @@ export async function startInstance(region, user, userName, ip, instanceType) {
         }
     }
 
-    const sts = new STSClient({apiVersion: '2011-06-15'});
-    const aliasCredentials = await sts.send(new AssumeRoleCommand({
-        RoleArn: process.env.ALIAS_ROLE_ARN,
-        RoleSessionName: user.replace('@', ''),
-        DurationSeconds: 15 * 60
-    }))
-
     /*await EC2.requestSpotFleet({
         SpotFleetRequestConfig: {
             IamFleetRole: "arn:aws:iam::146678277531:role/aws-ec2-spot-fleet-tagging-role",
@@ -234,7 +277,7 @@ export async function startInstance(region, user, userName, ip, instanceType) {
             await EC2.send(new ModifyInstanceAttributeCommand({
                 InstanceId: existingInstance.InstanceId,
                 UserData: {
-                    Value: await createUserData(region, user, userName, aliasCredentials)
+                    Value: await createUserData(user, userName)
                 },
             }))
             await EC2.send(new StartInstancesCommand({
@@ -253,7 +296,7 @@ export async function startInstance(region, user, userName, ip, instanceType) {
         }))).Subnets[0].SubnetId
 
         const instance = await EC2.send(new RunInstancesCommand({
-            UserData: (await createUserData(region, user, userName, aliasCredentials)).toString('base64'),
+            UserData: (await createUserData(user, userName)).toString('base64'),
             InstanceType: instanceType,
             EbsOptimized: true,
             IamInstanceProfile: {Name: 'ec2_instance_role_jetbrains'},
@@ -364,20 +407,15 @@ export async function putSshKey(user, key) {
     }))
 }
 
-async function createUserData(region, user, userName, aliasCredentials) {
+async function createUserData(user, userName) {
     const sshKey = await getSshKey(user)
 
     const userData = readFileSync(`${__dirname}/user_data.sh`, 'utf8')
         .replace(/%attachUrl%/g, `${process.env.SELF_URL}attach-ebs?user=${encodeURIComponent(user)}`)
-        .replace(/%region%/g, region)
+        .replace(/%aliasUrl%/g, `${process.env.SELF_URL}update-alias?user=${encodeURIComponent(user)}`)
         .replace(/%key%/g, sshKey)
         .replace(/%email%/g, user)
         .replace(/%userName%/g, userName)
-        .replace(/%awsId%/g, aliasCredentials.Credentials.AccessKeyId)
-        .replace(/%awsKey%/g, aliasCredentials.Credentials.SecretAccessKey)
-        .replace(/%awsToken%/g, aliasCredentials.Credentials.SessionToken)
-        .replace(/%hostedZone%/g, process.env.ALIAS_HOSTED_ZONE)
-        .replace(/%domain%/g, `${user.replace(/[@.]/g, '-')}.${process.env.ALIAS_DOMAIN}`)
 
     return Buffer.from(userData, 'utf8')
 }

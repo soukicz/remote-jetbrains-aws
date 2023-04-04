@@ -9,6 +9,7 @@
   "author": "Petr Soukup <soukup@simplia.cz>",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-route-53": "^3.303.0",
     "jwt-simple": "^0.5.6",
     "passport-saml": "^3.2.4"
   },

@@ -7,7 +7,7 @@ import {
     terminateInstance,
     allowCurrentIp,
     revokeIp,
-    putSshKey
+    putSshKey, updateAlias
 } from "./api.mjs";
 import home from "./home.mjs";
 import { readFileSync } from 'fs'
@@ -89,6 +89,12 @@ export async function handler(request, context, callback) {
     // EC2 api
     if (request.rawPath === '/attach-ebs') {
         await attachEbs(request.queryStringParameters.user)
+        return createJsonResponse(true, 200)
+    }
+
+    // DNS alias
+    if (request.rawPath === '/update-alias') {
+        await updateAlias(request.queryStringParameters.user)
         return createJsonResponse(true, 200)
     }
 

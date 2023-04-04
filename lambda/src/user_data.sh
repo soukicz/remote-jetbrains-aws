@@ -46,10 +46,7 @@ else
   chmod 700 /home/ec2-user/.ssh-server
 fi
 
-INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
-PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
-
-AWS_ACCESS_KEY_ID="%awsId%" AWS_SECRET_ACCESS_KEY="%awsKey%" AWS_SESSION_TOKEN="%awsToken%" aws route53 change-resource-record-sets --hosted-zone-id "%hostedZone%" --change-batch '{"Changes":[{"Action":"UPSERT","ResourceRecordSet":{"Name":"%domain%","Type":"A","TTL":15,"ResourceRecords":[{"Value":"'"$PUBLIC_IP"'"}]}}]}'
+curl "%aliasUrl%"
 
 ## EBS
 if mount | grep /home/ec2-user > /dev/null; then
