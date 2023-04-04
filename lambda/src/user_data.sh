@@ -56,7 +56,6 @@ if mount | grep /home/ec2-user > /dev/null; then
   echo "already mounted"
 else
   curl "%attachUrl%"
-  aws ec2 attach-volume --volume-id "%ebs_id%" --device /dev/xvde  --instance-id "$INSTANCE_ID" --region "%region%"
   while [ ! -e /dev/xvde ] ; do sleep 1 ; done
 
   DEVICE=$(realpath /dev/xvde)
