@@ -26,11 +26,12 @@ jobs:
         uses: montudor/action-zip@v0.1.0
         with:
           args: zip -qq -r ./bundle.zip ./
-      - name: default deploy
+      - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-central-1
+      - name: deploy to lambda
         run: |
-          aws lambda update-function-code --region eu-central-1 --function-name jetbrains --zip-file fileb://bundle.zip
+          aws lambda update-function-code --function-name jetbrains --zip-file fileb://bundle.zip
