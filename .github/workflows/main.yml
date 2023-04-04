@@ -34,4 +34,5 @@ jobs:
           aws-region: eu-central-1
       - name: deploy to lambda
         run: |
+          ls -l bundle.zip
           aws lambda update-function-code --function-name jetbrains --zip-file fileb://bundle.zip
