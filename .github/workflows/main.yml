@@ -24,7 +24,7 @@ jobs:
           CI: true
       - name: zip Lambda Function
         run: |
-          zip -r ./bundle.zip ./
+          zip -r ./bundle.zip ./ -x '*.git*'
       - name: AWS Deploy
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
