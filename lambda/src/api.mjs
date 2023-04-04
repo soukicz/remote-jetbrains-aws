@@ -415,7 +415,7 @@ async function createUserData(user, userName) {
         .replace(/%aliasUrl%/g, `${process.env.SELF_URL}update-alias?user=${encodeURIComponent(user)}`)
         .replace(/%key%/g, sshKey)
         .replace(/%email%/g, user)
-        .replace(/%userName%/g, userName)
+        .replace(/%userNameBase64%/g, Buffer.from(userName, 'utf8').toString('base64'))
 
     return Buffer.from(userData, 'utf8')
 }

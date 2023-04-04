@@ -83,7 +83,7 @@ fi
 
 yum install -y git docker
 
-git config --global user.name "%userName%"
+git config --global user.name $(echo "%userNameBase64%" | base64 --decode)
 git config --global user.email "%email%"
 
 DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
