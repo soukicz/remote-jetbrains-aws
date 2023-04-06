@@ -56,7 +56,10 @@ if [ ! -d /home/ec2-user/.ssh ]; then
   chown -R ec2-user:ec2-user /home/ec2-user/.ssh
 fi
 
-[ ! -f /home/ec2-user/.ssh/id_rsa ] && ssh-keygen -t rsa -f /home/ec2-user/.ssh/id_rsa -q -P ""
+if [ ! -f /home/ec2-user/.ssh/id_rsa ]; then
+  ssh-keygen -t rsa -f /home/ec2-user/.ssh/id_rsa -q -P ""
+  chown -R ec2-user:ec2-user /home/ec2-user/.ssh
+fi
 
 if [ -d /home/ec2-user/.ssh-server ]; then
   for name in ssh_host_ecdsa_key ssh_host_ed25519_key ssh_host_rsa_key
