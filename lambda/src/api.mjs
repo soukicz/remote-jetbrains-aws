@@ -71,7 +71,11 @@ export async function updateAlias(user) {
 
     const route53 = new Route53Client({
         apiVersion: '2013-04-01',
-        credentials: aliasCredentials.Credentials
+        credentials: {
+            accessKeyId: aliasCredentials.Credentials.AccessKeyId,
+            secretAccessKey: aliasCredentials.Credentials.SecretAccessKey,
+            sessionToken: aliasCredentials.Credentials.SessionToken
+        }
     });
 
     await route53.send(new ChangeResourceRecordSetsCommand({
