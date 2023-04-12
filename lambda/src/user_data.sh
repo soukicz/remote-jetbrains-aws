@@ -94,6 +94,9 @@ mkdir -p $DOCKER_CONFIG/cli-plugins
 curl -SL https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-linux-x86_64 -o $DOCKER_CONFIG/cli-plugins/docker-compose
 chmod +x $DOCKER_CONFIG/cli-plugins/docker-compose
 
+systemctl enable docker
+systemctl start docker
+
 touch /tmp/.active-ssh
 
 cat << EOF > /usr/bin/inactive-poweroff
