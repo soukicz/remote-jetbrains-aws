@@ -309,6 +309,8 @@ export async function startInstance(region, user, userName, ip, instanceType) {
                     "DeviceName": "/dev/xvda",
                     "Ebs": {
                         "Encrypted": true,
+                        'VolumeType': 'gp3',
+                        'VolumeSize': 32
                     }
                 }
             ],
